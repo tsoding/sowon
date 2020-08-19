@@ -10,8 +10,8 @@
 
 using namespace aids;
 
-const size_t SCREEN_WIDTH = 800;
-const size_t SCREEN_HEIGHT = 600;
+const size_t SCREEN_WIDTH = 1920;
+const size_t SCREEN_HEIGHT = 1080;
 const size_t FPS = 60;
 const float DELTA_TIME = 1.0f / (float) FPS;
 const size_t SPRITE_DIGIT_WIDTH = 300 / 2;
@@ -140,8 +140,10 @@ int main(int argc, char **argv)
         SDL_SetRenderDrawColor(renderer, 24, 24, 24, 255);
         SDL_RenderClear(renderer);
         {
-            size_t pen_x = 100;
-            size_t pen_y = 100;
+            int w, h;
+            SDL_GetWindowSize(window, &w, &h);
+            size_t pen_x = w / 2 - DIGIT_WIDTH * 8 / 2;
+            size_t pen_y = h / 2 - DIGIT_HEIGHT / 2;
             size_t t = (size_t) floorf(fmaxf(time, 0.0f));
 
             size_t hours = t / 60 / 60;
