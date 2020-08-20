@@ -7,7 +7,6 @@
 #include "stb_image.h"
 
 // TODO: ascending timer
-// TODO: resize interpolation
 
 const size_t SCREEN_WIDTH = 800;
 const size_t SCREEN_HEIGHT = 600;
@@ -129,6 +128,8 @@ int main(int argc, char **argv)
         sec(SDL_CreateRenderer(
                 window, -1,
                 SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED));
+
+    sec(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"));
 
     SDL_Texture *digits = load_png_file_as_texture(renderer, "./digits.png");
     sec(SDL_SetTextureColorMod(digits, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b));
