@@ -6,8 +6,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-// TODO: ascending timer
-
 const size_t SCREEN_WIDTH = 800;
 const size_t SCREEN_HEIGHT = 600;
 const size_t FPS = 60;
@@ -109,12 +107,13 @@ void initial_pen(SDL_Window *window, int *pen_x, int *pen_y, float scale)
 
 int main(int argc, char **argv)
 {
-    if (argc < 2) {
-        fprintf(stderr, "./sowon <seconds>\n");
-        exit(1);
-    }
+    bool ascending = true;
+    float time = 0.0f;
 
-    float time = strtof(argv[1], NULL);
+    if (argc > 1) {
+        ascending = false;
+        time = strtof(argv[1], NULL);
+    }
 
     sec(SDL_Init(SDL_INIT_VIDEO));
 
@@ -213,12 +212,16 @@ int main(int argc, char **argv)
         }
         wiggle_cooldown -= DELTA_TIME;
 
-        if (time > 1e-6) {
-            if (!paused) {
-                time -= DELTA_TIME;
+        if (!paused) {
+            if (ascending) {
+                time += DELTA_TIME;
+            } else {
+                if (time > 1e-6) {
+                    time -= DELTA_TIME;
+                } else {
+                    time = 0.0f;
+                }
             }
-        } else {
-            time = 0.0f;
         }
         // UPDATE END //////////////////////////////
 
