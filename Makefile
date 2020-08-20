@@ -1,5 +1,5 @@
-CXXFLAGS=`pkg-config --cflags sdl2` -std=c++17
-LIBS=`pkg-config --libs sdl2`
+CFLAGS=`pkg-config --cflags sdl2`
+LIBS=`pkg-config --libs sdl2` -lm
 
-sowon: main.cpp
-	$(CXX) $(CXXFLAGS) -o sowon main.cpp $(LIBS)
+sowon: main.c
+	$(CC) $(CFLAGS) -o sowon main.c $(LIBS)

@@ -23,7 +23,7 @@ const SDL_Color PAUSE_COLOR = {220, 120, 120, 255};
 const SDL_Color BACKGROUND_COLOR = {24, 24, 24, 255};
 const float SCALE_FACTOR = 0.15f;
 
-void sec(int code)
+void secc(int code)
 {
     if (code < 0) {
         fprintf(stderr, "SDL pooped itself: %s\n", SDL_GetError());
@@ -31,10 +31,9 @@ void sec(int code)
     }
 }
 
-template <typename T>
-T *sec(T *ptr)
+void *secp(void *ptr)
 {
-    if (ptr == nullptr) {
+    if (ptr == NULL) {
         fprintf(stderr, "SDL pooped itself: %s\n", SDL_GetError());
         abort();
     }
@@ -52,16 +51,16 @@ SDL_Surface *load_png_file_as_surface(const char *image_filename)
     }
 
     SDL_Surface* image_surface =
-        sec(SDL_CreateRGBSurfaceFrom(
-                image_pixels,
-                (int) width,
-                (int) height,
-                32,
-                (int) width * 4,
-                0x000000FF,
-                0x0000FF00,
-                0x00FF0000,
-                0xFF000000));
+        secp(SDL_CreateRGBSurfaceFrom(
+                 image_pixels,
+                 (int) width,
+                 (int) height,
+                 32,
+                 (int) width * 4,
+                 0x000000FF,
+                 0x0000FF00,
+                 0x00FF0000,
+                 0xFF000000));
     return image_surface;
 }
 
@@ -69,7 +68,7 @@ SDL_Texture *load_png_file_as_texture(SDL_Renderer *renderer,
                                       const char *image_filename)
 {
     SDL_Surface *image_surface = load_png_file_as_surface(image_filename);
-    return sec(SDL_CreateTextureFromSurface(renderer, image_surface));
+    return secp(SDL_CreateTextureFromSurface(renderer, image_surface));
 }
 
 void render_digit_at(SDL_Renderer *renderer, SDL_Texture *digits, size_t digit_index,
@@ -107,38 +106,38 @@ void initial_pen(SDL_Window *window, int *pen_x, int *pen_y, float scale)
 
 int main(int argc, char **argv)
 {
-    bool ascending = true;
+    int ascending = 1;
     float time = 0.0f;
 
     if (argc > 1) {
-        ascending = false;
+        ascending = 0;
         time = strtof(argv[1], NULL);
     }
 
-    sec(SDL_Init(SDL_INIT_VIDEO));
+    secc(SDL_Init(SDL_INIT_VIDEO));
 
     SDL_Window *window =
-        sec(SDL_CreateWindow(
-                "sowon",
-                0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
-                SDL_WINDOW_RESIZABLE));
+        secp(SDL_CreateWindow(
+                 "sowon",
+                 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
+                 SDL_WINDOW_RESIZABLE));
 
     SDL_Renderer *renderer =
-        sec(SDL_CreateRenderer(
-                window, -1,
-                SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED));
+        secp(SDL_CreateRenderer(
+                 window, -1,
+                 SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED));
 
-    sec(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"));
+    secc(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"));
 
     SDL_Texture *digits = load_png_file_as_texture(renderer, "./digits.png");
-    sec(SDL_SetTextureColorMod(digits, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b));
+    secc(SDL_SetTextureColorMod(digits, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b));
 
-    bool quit = false;
+    int quit = 0;
     size_t wiggle_index = 0;
     size_t digit_index = 0;
     float wiggle_cooldown = WIGGLE_DURATION;
     float digit_cooldown = 1.0f;
-    bool paused = false;
+    int paused = 0;
     float scale = 1.0f;
     while (!quit) {
         // INPUT BEGIN //////////////////////////////
@@ -146,7 +145,7 @@ int main(int argc, char **argv)
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_QUIT: {
-                quit = true;
+                quit = 1;
             } break;
 
             case SDL_KEYDOWN: {
@@ -154,9 +153,9 @@ int main(int argc, char **argv)
                 case SDLK_SPACE: {
                     paused = !paused;
                     if (paused) {
-                        sec(SDL_SetTextureColorMod(digits, PAUSE_COLOR.r, PAUSE_COLOR.g, PAUSE_COLOR.b));
+                        secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR.r, PAUSE_COLOR.g, PAUSE_COLOR.b));
                     } else {
-                        sec(SDL_SetTextureColorMod(digits, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b));
+                        secc(SDL_SetTextureColorMod(digits, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b));
                     }
                 } break;
 
