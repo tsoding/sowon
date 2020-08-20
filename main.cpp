@@ -6,10 +6,11 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-// TODO: scaling
+// TODO: ascending timer
+// TODO: resize interpolation
 
-const size_t SCREEN_WIDTH = 1920;
-const size_t SCREEN_HEIGHT = 1080;
+const size_t SCREEN_WIDTH = 800;
+const size_t SCREEN_HEIGHT = 600;
 const size_t FPS = 60;
 const float DELTA_TIME = 1.0f / (float) FPS;
 const size_t SPRITE_DIGIT_WIDTH = 300 / 2;
@@ -23,6 +24,7 @@ const size_t COLON_INDEX = 10;
 const SDL_Color MAIN_COLOR = {220, 220, 220, 255};
 const SDL_Color PAUSE_COLOR = {220, 120, 120, 255};
 const SDL_Color BACKGROUND_COLOR = {24, 24, 24, 255};
+const float SCALE_FACTOR = 0.15f;
 
 void sec(int code)
 {
@@ -53,15 +55,16 @@ SDL_Surface *load_png_file_as_surface(const char *image_filename)
     }
 
     SDL_Surface* image_surface =
-        sec(SDL_CreateRGBSurfaceFrom(image_pixels,
-                                     (int) width,
-                                     (int) height,
-                                     32,
-                                     (int) width * 4,
-                                     0x000000FF,
-                                     0x0000FF00,
-                                     0x00FF0000,
-                                     0xFF000000));
+        sec(SDL_CreateRGBSurfaceFrom(
+                image_pixels,
+                (int) width,
+                (int) height,
+                32,
+                (int) width * 4,
+                0x000000FF,
+                0x0000FF00,
+                0x00FF0000,
+                0xFF000000));
     return image_surface;
 }
 
@@ -73,16 +76,36 @@ SDL_Texture *load_png_file_as_texture(SDL_Renderer *renderer,
 }
 
 void render_digit_at(SDL_Renderer *renderer, SDL_Texture *digits, size_t digit_index,
-        size_t wiggle_index, int x, int y)
+                     size_t wiggle_index, int *pen_x, int *pen_y, float scale)
 {
+    const int effective_digit_width = (int) floorf((float) DIGIT_WIDTH * scale);
+    const int effective_digit_height = (int) floorf((float) DIGIT_HEIGHT * scale);
+
     const SDL_Rect src_rect = {
         (int) (digit_index * SPRITE_DIGIT_WIDTH),
         (int) (wiggle_index * SPRITE_DIGIT_HEIGHT),
         SPRITE_DIGIT_WIDTH,
         SPRITE_DIGIT_HEIGHT
     };
-    const SDL_Rect dst_rect = {x, y, DIGIT_WIDTH, DIGIT_HEIGHT};
+    const SDL_Rect dst_rect = {
+        *pen_x,
+        *pen_y,
+        effective_digit_width,
+        effective_digit_height
+    };
     SDL_RenderCopy(renderer, digits, &src_rect, &dst_rect);
+    *pen_x += effective_digit_width;
+}
+
+void initial_pen(SDL_Window *window, int *pen_x, int *pen_y, float scale)
+{
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+
+    const int effective_digit_width = (int) floorf((float) DIGIT_WIDTH * scale);
+    const int effective_digit_height = (int) floorf((float) DIGIT_HEIGHT * scale);
+    *pen_x = w / 2 - effective_digit_width * 8 / 2;
+    *pen_y = h / 2 - effective_digit_height / 2;
 }
 
 int main(int argc, char **argv)
@@ -116,6 +139,7 @@ int main(int argc, char **argv)
     float wiggle_cooldown = WIGGLE_DURATION;
     float digit_cooldown = 1.0f;
     bool paused = false;
+    float scale = 1.0f;
     while (!quit) {
         // INPUT BEGIN //////////////////////////////
         SDL_Event event = {};
@@ -135,6 +159,18 @@ int main(int argc, char **argv)
                         sec(SDL_SetTextureColorMod(digits, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b));
                     }
                 } break;
+
+                case SDLK_EQUALS: {
+                    scale += SCALE_FACTOR * scale;
+                } break;
+
+                case SDLK_MINUS: {
+                    scale -= SCALE_FACTOR * scale;
+                } break;
+
+                case SDLK_0: {
+                    scale = 1.0f;
+                } break;
                 }
             } break;
 
@@ -147,33 +183,24 @@ int main(int argc, char **argv)
         SDL_SetRenderDrawColor(renderer, BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, 255);
         SDL_RenderClear(renderer);
         {
-            int w, h;
-            SDL_GetWindowSize(window, &w, &h);
-            size_t pen_x = w / 2 - DIGIT_WIDTH * 8 / 2;
-            size_t pen_y = h / 2 - DIGIT_HEIGHT / 2;
-            size_t t = (size_t) floorf(fmaxf(time, 0.0f));
+            int pen_x, pen_y;
+            initial_pen(window, &pen_x, &pen_y, scale);
 
-            size_t hours = t / 60 / 60;
-            render_digit_at(renderer, digits, hours / 10, wiggle_index, pen_x, pen_y);
-            pen_x += DIGIT_WIDTH;
-            render_digit_at(renderer, digits, hours % 10, wiggle_index, pen_x, pen_y);
-            pen_x += DIGIT_WIDTH;
-            render_digit_at(renderer, digits, COLON_INDEX, wiggle_index, pen_x, pen_y);
-            pen_x += DIGIT_WIDTH;
+            const size_t t = (size_t) floorf(fmaxf(time, 0.0f));
 
-            size_t minutes = t / 60 % 60;
-            render_digit_at(renderer, digits, minutes / 10, wiggle_index, pen_x, pen_y);
-            pen_x += DIGIT_WIDTH;
-            render_digit_at(renderer, digits, minutes % 10, wiggle_index, pen_x, pen_y);
-            pen_x += DIGIT_WIDTH;
-            render_digit_at(renderer, digits, COLON_INDEX, wiggle_index, pen_x, pen_y);
-            pen_x += DIGIT_WIDTH;
+            const size_t hours = t / 60 / 60;
+            render_digit_at(renderer, digits, hours / 10, wiggle_index, &pen_x, &pen_y, scale);
+            render_digit_at(renderer, digits, hours % 10, wiggle_index, &pen_x, &pen_y, scale);
+            render_digit_at(renderer, digits, COLON_INDEX, wiggle_index, &pen_x, &pen_y, scale);
 
-            size_t seconds = t % 60;
-            render_digit_at(renderer, digits, seconds / 10, wiggle_index, pen_x, pen_y);
-            pen_x += DIGIT_WIDTH;
-            render_digit_at(renderer, digits, seconds % 10, wiggle_index, pen_x, pen_y);
-            pen_x += DIGIT_WIDTH;
+            const size_t minutes = t / 60 % 60;
+            render_digit_at(renderer, digits, minutes / 10, wiggle_index, &pen_x, &pen_y, scale);
+            render_digit_at(renderer, digits, minutes % 10, wiggle_index, &pen_x, &pen_y, scale);
+            render_digit_at(renderer, digits, COLON_INDEX, wiggle_index, &pen_x, &pen_y, scale);
+
+            const size_t seconds = t % 60;
+            render_digit_at(renderer, digits, seconds / 10, wiggle_index, &pen_x, &pen_y, scale);
+            render_digit_at(renderer, digits, seconds % 10, wiggle_index, &pen_x, &pen_y, scale);
         }
         SDL_RenderPresent(renderer);
         // RENDER END //////////////////////////////
