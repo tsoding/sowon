@@ -11,7 +11,6 @@
 using namespace aids;
 
 // TODO: scaling
-// TODO: indication of pause/unpause
 
 const size_t SCREEN_WIDTH = 1920;
 const size_t SCREEN_HEIGHT = 1080;
@@ -25,6 +24,9 @@ const size_t DIGITS_COUNT = 11;
 const size_t WIGGLE_COUNT = 3;
 const float WIGGLE_DURATION = 0.40 / (float) WIGGLE_COUNT;
 const size_t COLON_INDEX = 10;
+const SDL_Color MAIN_COLOR = {220, 220, 220, 255};
+const SDL_Color PAUSE_COLOR = {220, 120, 120, 255};
+const SDL_Color BACKGROUND_COLOR = {24, 24, 24, 255};
 
 void sec(int code)
 {
@@ -110,6 +112,7 @@ int main(int argc, char **argv)
                 SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED));
 
     SDL_Texture *digits = load_png_file_as_texture(renderer, "./digits.png");
+    sec(SDL_SetTextureColorMod(digits, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b));
 
     bool quit = false;
     size_t wiggle_index = 0;
@@ -130,6 +133,11 @@ int main(int argc, char **argv)
                 switch (event.key.keysym.sym) {
                 case SDLK_SPACE: {
                     paused = !paused;
+                    if (paused) {
+                        sec(SDL_SetTextureColorMod(digits, PAUSE_COLOR.r, PAUSE_COLOR.g, PAUSE_COLOR.b));
+                    } else {
+                        sec(SDL_SetTextureColorMod(digits, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b));
+                    }
                 } break;
                 }
             } break;
@@ -140,7 +148,7 @@ int main(int argc, char **argv)
         // INPUT END //////////////////////////////
 
         // RENDER BEGIN //////////////////////////////
-        SDL_SetRenderDrawColor(renderer, 24, 24, 24, 255);
+        SDL_SetRenderDrawColor(renderer, BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, 255);
         SDL_RenderClear(renderer);
         {
             int w, h;
