@@ -6,10 +6,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#include "aids.hpp"
-
-using namespace aids;
-
 // TODO: scaling
 
 const size_t SCREEN_WIDTH = 1920;
@@ -31,7 +27,7 @@ const SDL_Color BACKGROUND_COLOR = {24, 24, 24, 255};
 void sec(int code)
 {
     if (code < 0) {
-        println(stderr, "SDL pooped itself: ", SDL_GetError());
+        fprintf(stderr, "SDL pooped itself: %s\n", SDL_GetError());
         abort();
     }
 }
@@ -40,7 +36,7 @@ template <typename T>
 T *sec(T *ptr)
 {
     if (ptr == nullptr) {
-        println(stderr, "SDL pooped itself: ", SDL_GetError());
+        fprintf(stderr, "SDL pooped itself: %s\n", SDL_GetError());
         abort();
     }
 
@@ -52,7 +48,7 @@ SDL_Surface *load_png_file_as_surface(const char *image_filename)
     int width, height;
     uint32_t *image_pixels = (uint32_t *) stbi_load(image_filename, &width, &height, NULL, 4);
     if (image_pixels == NULL) {
-        println(stderr, "[ERROR] Could not load `", image_filename, "` as PNG");
+        fprintf(stderr, "[ERROR] Could not load `%s` as PNG\n", image_filename);
         abort();
     }
 
