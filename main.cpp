@@ -10,6 +10,9 @@
 
 using namespace aids;
 
+// TODO: scaling
+// TODO: indication of pause/unpause
+
 const size_t SCREEN_WIDTH = 1920;
 const size_t SCREEN_HEIGHT = 1080;
 const size_t FPS = 60;
