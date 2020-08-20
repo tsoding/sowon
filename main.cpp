@@ -186,7 +186,7 @@ int main(int argc, char **argv)
             int pen_x, pen_y;
             initial_pen(window, &pen_x, &pen_y, scale);
 
-            const size_t t = (size_t) floorf(fmaxf(time, 0.0f));
+            const size_t t = (size_t) ceilf(fmaxf(time, 0.0f));
 
             const size_t hours = t / 60 / 60;
             render_digit_at(renderer, digits, hours / 10, wiggle_index, &pen_x, &pen_y, scale);
