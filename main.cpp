@@ -71,13 +71,13 @@ SDL_Texture *load_png_file_as_texture(SDL_Renderer *renderer,
     return sec(SDL_CreateTextureFromSurface(renderer, image_surface));
 }
 
-void render_digit_at(SDL_Renderer *renderer, SDL_Texture *digits, size_t digit_index, 
+void render_digit_at(SDL_Renderer *renderer, SDL_Texture *digits, size_t digit_index,
         size_t wiggle_index, int x, int y)
 {
     const SDL_Rect src_rect = {
         (int) (digit_index * SPRITE_DIGIT_WIDTH),
         (int) (wiggle_index * SPRITE_DIGIT_HEIGHT),
-        SPRITE_DIGIT_WIDTH, 
+        SPRITE_DIGIT_WIDTH,
         SPRITE_DIGIT_HEIGHT
     };
     const SDL_Rect dst_rect = {x, y, DIGIT_WIDTH, DIGIT_HEIGHT};
@@ -125,10 +125,10 @@ int main(int argc, char **argv)
 
             case SDL_KEYDOWN: {
                 switch (event.key.keysym.sym) {
-	        case SDLK_SPACE: {
-		    paused = !paused;
-		} break;
-		}
+                case SDLK_SPACE: {
+                    paused = !paused;
+                } break;
+                }
             } break;
 
             default: {}
