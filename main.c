@@ -6,22 +6,28 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-const size_t SCREEN_WIDTH = 800;
-const size_t SCREEN_HEIGHT = 600;
-const size_t FPS = 60;
-const float DELTA_TIME = 1.0f / (float) FPS;
-const size_t SPRITE_DIGIT_WIDTH = 300 / 2;
-const size_t SPRITE_DIGIT_HEIGHT = 380 / 2;
-const size_t DIGIT_WIDTH = 300 / 2;
-const size_t DIGIT_HEIGHT = 380 / 2;
-const size_t DIGITS_COUNT = 11;
-const size_t WIGGLE_COUNT = 3;
-const float WIGGLE_DURATION = 0.40 / (float) WIGGLE_COUNT;
-const size_t COLON_INDEX = 10;
-const SDL_Color MAIN_COLOR = {220, 220, 220, 255};
-const SDL_Color PAUSE_COLOR = {220, 120, 120, 255};
-const SDL_Color BACKGROUND_COLOR = {24, 24, 24, 255};
-const float SCALE_FACTOR = 0.15f;
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 600
+#define FPS 60
+#define DELTA_TIME (1.0f / FPS)
+#define SPRITE_DIGIT_WIDTH (300 / 2)
+#define SPRITE_DIGIT_HEIGHT (380 / 2)
+#define DIGIT_WIDTH (300 / 2)
+#define DIGIT_HEIGHT (380 / 2)
+#define DIGITS_COUNT 11
+#define WIGGLE_COUNT 3
+#define WIGGLE_DURATION (0.40 / WIGGLE_COUNT)
+#define COLON_INDEX 10
+#define MAIN_COLOR_R 220
+#define MAIN_COLOR_G 220
+#define MAIN_COLOR_B 220
+#define PAUSE_COLOR_R 220
+#define PAUSE_COLOR_G 120
+#define PAUSE_COLOR_B 120
+#define BACKGROUND_COLOR_R 24
+#define BACKGROUND_COLOR_G 24
+#define BACKGROUND_COLOR_B 24
+#define SCALE_FACTOR 0.15f
 
 void secc(int code)
 {
@@ -130,7 +136,7 @@ int main(int argc, char **argv)
     secc(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"));
 
     SDL_Texture *digits = load_png_file_as_texture(renderer, "./digits.png");
-    secc(SDL_SetTextureColorMod(digits, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b));
+    secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
 
     int quit = 0;
     size_t wiggle_index = 0;
@@ -151,9 +157,9 @@ int main(int argc, char **argv)
                 case SDLK_SPACE: {
                     paused = !paused;
                     if (paused) {
-                        secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR.r, PAUSE_COLOR.g, PAUSE_COLOR.b));
+                        secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
                     } else {
-                        secc(SDL_SetTextureColorMod(digits, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b));
+                        secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
                     }
                 } break;
 
@@ -177,7 +183,7 @@ int main(int argc, char **argv)
         // INPUT END //////////////////////////////
 
         // RENDER BEGIN //////////////////////////////
-        SDL_SetRenderDrawColor(renderer, BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, 255);
+        SDL_SetRenderDrawColor(renderer, BACKGROUND_COLOR_R, BACKGROUND_COLOR_G, BACKGROUND_COLOR_B, 255);
         SDL_RenderClear(renderer);
         {
             int pen_x, pen_y;
