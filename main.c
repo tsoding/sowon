@@ -134,14 +134,12 @@ int main(int argc, char **argv)
 
     int quit = 0;
     size_t wiggle_index = 0;
-    size_t digit_index = 0;
     float wiggle_cooldown = WIGGLE_DURATION;
-    float digit_cooldown = 1.0f;
     int paused = 0;
     float scale = 1.0f;
     while (!quit) {
         // INPUT BEGIN //////////////////////////////
-        SDL_Event event = {};
+        SDL_Event event = {0};
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_QUIT: {
