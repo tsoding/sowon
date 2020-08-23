@@ -78,10 +78,10 @@ SDL_Texture *load_png_file_as_texture(SDL_Renderer *renderer,
 }
 
 void render_digit_at(SDL_Renderer *renderer, SDL_Texture *digits, size_t digit_index,
-                     size_t wiggle_index, int *pen_x, int *pen_y, float scale)
+                     size_t wiggle_index, int *pen_x, int *pen_y, float user_scale, float fit_scale)
 {
-    const int effective_digit_width = (int) floorf((float) DIGIT_WIDTH * scale);
-    const int effective_digit_height = (int) floorf((float) DIGIT_HEIGHT * scale);
+    const int effective_digit_width = (int) floorf((float) DIGIT_WIDTH * user_scale * fit_scale);
+    const int effective_digit_height = (int) floorf((float) DIGIT_HEIGHT * user_scale * fit_scale);
 
     const SDL_Rect src_rect = {
         (int) (digit_index * SPRITE_DIGIT_WIDTH),
@@ -99,13 +99,21 @@ void render_digit_at(SDL_Renderer *renderer, SDL_Texture *digits, size_t digit_i
     *pen_x += effective_digit_width;
 }
 
-void initial_pen(SDL_Window *window, int *pen_x, int *pen_y, float scale)
+void initial_pen(SDL_Window *window, int *pen_x, int *pen_y, float user_scale, float *fit_scale)
 {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
 
-    const int effective_digit_width = (int) floorf((float) DIGIT_WIDTH * scale);
-    const int effective_digit_height = (int) floorf((float) DIGIT_HEIGHT * scale);
+    float text_aspect_ratio = (float) TEXT_WIDTH / (float) TEXT_HEIGHT;
+    float window_aspect_ratio = (float) w / (float) h;
+    if(text_aspect_ratio > window_aspect_ratio) {
+        *fit_scale = (float) w / (float) TEXT_WIDTH;
+    } else {
+        *fit_scale = (float) h / (float) TEXT_HEIGHT;
+    }
+
+    const int effective_digit_width = (int) floorf((float) DIGIT_WIDTH * user_scale * *fit_scale);
+    const int effective_digit_height = (int) floorf((float) DIGIT_HEIGHT * user_scale * *fit_scale);
     *pen_x = w / 2 - effective_digit_width * DIGITS_COUNT / 2;
     *pen_y = h / 2 - effective_digit_height / 2;
 }
@@ -142,7 +150,7 @@ int main(int argc, char **argv)
     size_t wiggle_index = 0;
     float wiggle_cooldown = WIGGLE_DURATION;
     int paused = 0;
-    float scale = 1.0f;
+    float user_scale = 1.0f;
     while (!quit) {
         // INPUT BEGIN //////////////////////////////
         SDL_Event event = {0};
@@ -164,15 +172,15 @@ int main(int argc, char **argv)
                 } break;
 
                 case SDLK_EQUALS: {
-                    scale += SCALE_FACTOR * scale;
+                    user_scale += SCALE_FACTOR * user_scale;
                 } break;
 
                 case SDLK_MINUS: {
-                    scale -= SCALE_FACTOR * scale;
+                    user_scale -= SCALE_FACTOR * user_scale;
                 } break;
 
                 case SDLK_0: {
-                    scale = 1.0f;
+                    user_scale = 1.0f;
                 } break;
                 }
             } break;
@@ -187,23 +195,24 @@ int main(int argc, char **argv)
         SDL_RenderClear(renderer);
         {
             int pen_x, pen_y;
-            initial_pen(window, &pen_x, &pen_y, scale);
+            float fit_scale = 1.0;
+            initial_pen(window, &pen_x, &pen_y, user_scale, &fit_scale);
 
             const size_t t = (size_t) ceilf(fmaxf(time, 0.0f));
 
             const size_t hours = t / 60 / 60;
-            render_digit_at(renderer, digits, hours / 10, wiggle_index, &pen_x, &pen_y, scale);
-            render_digit_at(renderer, digits, hours % 10, wiggle_index, &pen_x, &pen_y, scale);
-            render_digit_at(renderer, digits, COLON_INDEX, wiggle_index, &pen_x, &pen_y, scale);
+            render_digit_at(renderer, digits, hours / 10, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, hours % 10, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, COLON_INDEX, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
 
             const size_t minutes = t / 60 % 60;
-            render_digit_at(renderer, digits, minutes / 10, wiggle_index, &pen_x, &pen_y, scale);
-            render_digit_at(renderer, digits, minutes % 10, wiggle_index, &pen_x, &pen_y, scale);
-            render_digit_at(renderer, digits, COLON_INDEX, wiggle_index, &pen_x, &pen_y, scale);
+            render_digit_at(renderer, digits, minutes / 10, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, minutes % 10, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, COLON_INDEX, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
 
             const size_t seconds = t % 60;
-            render_digit_at(renderer, digits, seconds / 10, wiggle_index, &pen_x, &pen_y, scale);
-            render_digit_at(renderer, digits, seconds % 10, wiggle_index, &pen_x, &pen_y, scale);
+            render_digit_at(renderer, digits, seconds / 10, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, seconds % 10, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
         }
         SDL_RenderPresent(renderer);
         // RENDER END //////////////////////////////
