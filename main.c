@@ -6,15 +6,15 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 600
 #define FPS 60
 #define DELTA_TIME (1.0f / FPS)
 #define SPRITE_DIGIT_WIDTH (300 / 2)
 #define SPRITE_DIGIT_HEIGHT (380 / 2)
 #define DIGIT_WIDTH (300 / 2)
 #define DIGIT_HEIGHT (380 / 2)
-#define DIGITS_COUNT 11
+#define DIGITS_COUNT 8
+#define TEXT_WIDTH (DIGIT_WIDTH * DIGITS_COUNT)
+#define TEXT_HEIGHT (DIGIT_HEIGHT)
 #define WIGGLE_COUNT 3
 #define WIGGLE_DURATION (0.40 / WIGGLE_COUNT)
 #define COLON_INDEX 10
@@ -106,7 +106,7 @@ void initial_pen(SDL_Window *window, int *pen_x, int *pen_y, float scale)
 
     const int effective_digit_width = (int) floorf((float) DIGIT_WIDTH * scale);
     const int effective_digit_height = (int) floorf((float) DIGIT_HEIGHT * scale);
-    *pen_x = w / 2 - effective_digit_width * 8 / 2;
+    *pen_x = w / 2 - effective_digit_width * DIGITS_COUNT / 2;
     *pen_y = h / 2 - effective_digit_height / 2;
 }
 
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
     SDL_Window *window =
         secp(SDL_CreateWindow(
                  "sowon",
-                 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
+                 0, 0, TEXT_WIDTH, TEXT_HEIGHT,
                  SDL_WINDOW_RESIZABLE));
 
     SDL_Renderer *renderer =
