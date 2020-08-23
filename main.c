@@ -171,14 +171,17 @@ int main(int argc, char **argv)
                     }
                 } break;
 
+                case SDLK_KP_PLUS:
                 case SDLK_EQUALS: {
                     user_scale += SCALE_FACTOR * user_scale;
                 } break;
 
+                case SDLK_KP_MINUS:
                 case SDLK_MINUS: {
                     user_scale -= SCALE_FACTOR * user_scale;
                 } break;
 
+                case SDLK_KP_0:
                 case SDLK_0: {
                     user_scale = 1.0f;
                 } break;
