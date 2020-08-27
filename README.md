@@ -16,6 +16,7 @@ $ make
 
 - Ascending mode: `./sowon`
 - Descending mode: `./sowon <seconds>`
+- Clock Mode: `./sowon clock`
 
 ### Key bindings
 
