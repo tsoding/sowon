@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 #include <SDL.h>
 
@@ -112,12 +114,21 @@ void initial_pen(SDL_Window *window, int *pen_x, int *pen_y, float scale)
 
 int main(int argc, char **argv)
 {
-    int ascending = 1;
-    float time = 0.0f;
+    // Modes:
+    // 0 = ascending
+    // 1 = countdown
+    // 2 = clock
+
+    int mode = 0;
+    float displayed_time = 0.0f;
 
     if (argc > 1) {
-        ascending = 0;
-        time = strtof(argv[1], NULL);
+        if (strcmp(argv[1], "clock") == 0) {
+            mode = 2;
+        } else {
+            mode = 1;
+            displayed_time = strtof(argv[1], NULL);
+        }
     }
 
     secc(SDL_Init(SDL_INIT_VIDEO));
@@ -189,7 +200,7 @@ int main(int argc, char **argv)
             int pen_x, pen_y;
             initial_pen(window, &pen_x, &pen_y, scale);
 
-            const size_t t = (size_t) ceilf(fmaxf(time, 0.0f));
+            const size_t t = (size_t) ceilf(fmaxf(displayed_time, 0.0f));
 
             const size_t hours = t / 60 / 60;
             render_digit_at(renderer, digits, hours / 10, wiggle_index, &pen_x, &pen_y, scale);
@@ -216,14 +227,20 @@ int main(int argc, char **argv)
         wiggle_cooldown -= DELTA_TIME;
 
         if (!paused) {
-            if (ascending) {
-                time += DELTA_TIME;
-            } else {
-                if (time > 1e-6) {
-                    time -= DELTA_TIME;
+            if (mode == 0) {
+                displayed_time += DELTA_TIME;
+            } else if (mode == 1) {
+                if (displayed_time > 1e-6) {
+                    displayed_time -= DELTA_TIME;
                 } else {
-                    time = 0.0f;
+                    displayed_time = 0.0f;
                 }
+            } else if (mode == 2) {
+                time_t t = time(NULL);
+                struct tm *tm = localtime(&t);
+                displayed_time = tm->tm_sec
+                               + tm->tm_min  * 60
+                               + tm->tm_hour * 60 * 60;
             }
         }
         // UPDATE END //////////////////////////////
