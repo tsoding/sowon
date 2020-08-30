@@ -188,6 +188,17 @@ int main(int argc, char **argv)
                 }
             } break;
 
+            case SDL_MOUSEWHEEL: {
+                if(event.wheel.y > 0)
+                {
+                    user_scale += SCALE_FACTOR * user_scale;
+                }
+                else if(event.wheel.y < 0)
+                {
+                    user_scale -= SCALE_FACTOR * user_scale;
+                }
+            }
+
             default: {}
             }
         }
