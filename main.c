@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 #include <SDL.h>
 
@@ -118,14 +120,24 @@ void initial_pen(SDL_Window *window, int *pen_x, int *pen_y, float user_scale, f
     *pen_y = h / 2 - effective_digit_height / 2;
 }
 
+typedef enum {
+    MODE_ASCENDING = 0,
+    MODE_COUNTDOWN,
+    MODE_CLOCK,
+} Mode;
+
 int main(int argc, char **argv)
 {
-    int ascending = 1;
-    float time = 0.0f;
+    Mode mode = MODE_ASCENDING;
+    float displayed_time = 0.0f;
 
     if (argc > 1) {
-        ascending = 0;
-        time = strtof(argv[1], NULL);
+        if (strcmp(argv[1], "clock") == 0) {
+            mode = MODE_CLOCK;
+        } else {
+            mode = MODE_COUNTDOWN;
+            displayed_time = strtof(argv[1], NULL);
+        }
     }
 
     secc(SDL_Init(SDL_INIT_VIDEO));
@@ -211,7 +223,7 @@ int main(int argc, char **argv)
             float fit_scale = 1.0;
             initial_pen(window, &pen_x, &pen_y, user_scale, &fit_scale);
 
-            const size_t t = (size_t) ceilf(fmaxf(time, 0.0f));
+            const size_t t = (size_t) ceilf(fmaxf(displayed_time, 0.0f));
 
             const size_t hours = t / 60 / 60;
             render_digit_at(renderer, digits, hours / 10, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
@@ -238,14 +250,24 @@ int main(int argc, char **argv)
         wiggle_cooldown -= DELTA_TIME;
 
         if (!paused) {
-            if (ascending) {
-                time += DELTA_TIME;
-            } else {
-                if (time > 1e-6) {
-                    time -= DELTA_TIME;
+            switch (mode) {
+            case MODE_ASCENDING: {
+                displayed_time += DELTA_TIME;
+            } break;
+            case MODE_COUNTDOWN: {
+                if (displayed_time > 1e-6) {
+                    displayed_time -= DELTA_TIME;
                 } else {
-                    time = 0.0f;
+                    displayed_time = 0.0f;
                 }
+            } break;
+            case MODE_CLOCK: {
+                time_t t = time(NULL);
+                struct tm *tm = localtime(&t);
+                displayed_time = tm->tm_sec
+                               + tm->tm_min  * 60
+                               + tm->tm_hour * 60 * 60;
+            } break;
             }
         }
         // UPDATE END //////////////////////////////
