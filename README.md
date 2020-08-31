@@ -18,6 +18,10 @@ $ make
 - Descending mode: `./sowon <seconds>`
 - Clock Mode: `./sowon clock`
 
+### Flags
+
+- Start in paused state: `./sowon -p <mode>`
+
 ### Key bindings
 
 | Key | Description |
