@@ -130,13 +130,16 @@ int main(int argc, char **argv)
 {
     Mode mode = MODE_ASCENDING;
     float displayed_time = 0.0f;
+    int paused = 0;
 
-    if (argc > 1) {
-        if (strcmp(argv[1], "clock") == 0) {
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "-p") == 0) {
+            paused = 1;
+        } else if (strcmp(argv[i], "clock") == 0) {
             mode = MODE_CLOCK;
         } else {
             mode = MODE_COUNTDOWN;
-            displayed_time = strtof(argv[1], NULL);
+            displayed_time = strtof(argv[i], NULL);
         }
     }
 
@@ -158,10 +161,15 @@ int main(int argc, char **argv)
     SDL_Texture *digits = load_png_file_as_texture(renderer, "./digits.png");
     secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
 
+    if (paused) {
+        secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
+    } else {
+        secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
+    }
+
     int quit = 0;
     size_t wiggle_index = 0;
     float wiggle_cooldown = WIGGLE_DURATION;
-    int paused = 0;
     float user_scale = 1.0f;
     while (!quit) {
         // INPUT BEGIN //////////////////////////////
