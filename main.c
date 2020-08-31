@@ -112,21 +112,22 @@ void initial_pen(SDL_Window *window, int *pen_x, int *pen_y, float scale)
     *pen_y = h / 2 - effective_digit_height / 2;
 }
 
+typedef enum {
+    MODE_ASCENDING = 0,
+    MODE_COUNTDOWN,
+    MODE_CLOCK,
+} Mode;
+
 int main(int argc, char **argv)
 {
-    // Modes:
-    // 0 = ascending
-    // 1 = countdown
-    // 2 = clock
-
-    int mode = 0;
+    Mode mode = MODE_ASCENDING;
     float displayed_time = 0.0f;
 
     if (argc > 1) {
         if (strcmp(argv[1], "clock") == 0) {
-            mode = 2;
+            mode = MODE_CLOCK;
         } else {
-            mode = 1;
+            mode = MODE_COUNTDOWN;
             displayed_time = strtof(argv[1], NULL);
         }
     }
@@ -227,20 +228,24 @@ int main(int argc, char **argv)
         wiggle_cooldown -= DELTA_TIME;
 
         if (!paused) {
-            if (mode == 0) {
+            switch (mode) {
+            case MODE_ASCENDING: {
                 displayed_time += DELTA_TIME;
-            } else if (mode == 1) {
+            } break;
+            case MODE_COUNTDOWN: {
                 if (displayed_time > 1e-6) {
                     displayed_time -= DELTA_TIME;
                 } else {
                     displayed_time = 0.0f;
                 }
-            } else if (mode == 2) {
+            } break;
+            case MODE_CLOCK: {
                 time_t t = time(NULL);
                 struct tm *tm = localtime(&t);
                 displayed_time = tm->tm_sec
                                + tm->tm_min  * 60
                                + tm->tm_hour * 60 * 60;
+            } break;
             }
         }
         // UPDATE END //////////////////////////////
