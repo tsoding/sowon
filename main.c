@@ -8,13 +8,13 @@
 
 #define FPS 60
 #define DELTA_TIME (1.0f / FPS)
-#define SPRITE_DIGIT_WIDTH (300 / 2)
-#define SPRITE_DIGIT_HEIGHT (380 / 2)
-#define DIGIT_WIDTH (300 / 2)
-#define DIGIT_HEIGHT (380 / 2)
-#define DIGITS_COUNT 8
-#define TEXT_WIDTH (DIGIT_WIDTH * DIGITS_COUNT)
-#define TEXT_HEIGHT (DIGIT_HEIGHT)
+#define SPRITE_CHAR_WIDTH (300 / 2)
+#define SPRITE_CHAR_HEIGHT (380 / 2)
+#define CHAR_WIDTH (300 / 2)
+#define CHAR_HEIGHT (380 / 2)
+#define CHARS_COUNT 8
+#define TEXT_WIDTH (CHAR_WIDTH * CHARS_COUNT)
+#define TEXT_HEIGHT (CHAR_HEIGHT)
 #define WIGGLE_COUNT 3
 #define WIGGLE_DURATION (0.40 / WIGGLE_COUNT)
 #define COLON_INDEX 10
@@ -80,14 +80,14 @@ SDL_Texture *load_png_file_as_texture(SDL_Renderer *renderer,
 void render_digit_at(SDL_Renderer *renderer, SDL_Texture *digits, size_t digit_index,
                      size_t wiggle_index, int *pen_x, int *pen_y, float user_scale, float fit_scale)
 {
-    const int effective_digit_width = (int) floorf((float) DIGIT_WIDTH * user_scale * fit_scale);
-    const int effective_digit_height = (int) floorf((float) DIGIT_HEIGHT * user_scale * fit_scale);
+    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
+    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
 
     const SDL_Rect src_rect = {
-        (int) (digit_index * SPRITE_DIGIT_WIDTH),
-        (int) (wiggle_index * SPRITE_DIGIT_HEIGHT),
-        SPRITE_DIGIT_WIDTH,
-        SPRITE_DIGIT_HEIGHT
+        (int) (digit_index * SPRITE_CHAR_WIDTH),
+        (int) (wiggle_index * SPRITE_CHAR_HEIGHT),
+        SPRITE_CHAR_WIDTH,
+        SPRITE_CHAR_HEIGHT
     };
     const SDL_Rect dst_rect = {
         *pen_x,
@@ -112,9 +112,9 @@ void initial_pen(SDL_Window *window, int *pen_x, int *pen_y, float user_scale, f
         *fit_scale = (float) h / (float) TEXT_HEIGHT;
     }
 
-    const int effective_digit_width = (int) floorf((float) DIGIT_WIDTH * user_scale * *fit_scale);
-    const int effective_digit_height = (int) floorf((float) DIGIT_HEIGHT * user_scale * *fit_scale);
-    *pen_x = w / 2 - effective_digit_width * DIGITS_COUNT / 2;
+    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * *fit_scale);
+    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * *fit_scale);
+    *pen_x = w / 2 - effective_digit_width * CHARS_COUNT / 2;
     *pen_y = h / 2 - effective_digit_height / 2;
 }
 
