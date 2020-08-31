@@ -226,25 +226,25 @@ int main(int argc, char **argv)
             const size_t t = (size_t) ceilf(fmaxf(displayed_time, 0.0f));
 
             const size_t hours = t / 60 / 60;
-            render_digit_at(renderer, digits, hours / 10, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
-            render_digit_at(renderer, digits, hours % 10, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
-            render_digit_at(renderer, digits, COLON_INDEX, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, hours / 10,   wiggle_index      % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, hours % 10,  (wiggle_index + 1) % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, COLON_INDEX,  wiggle_index      % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
 
             const size_t minutes = t / 60 % 60;
-            render_digit_at(renderer, digits, minutes / 10, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
-            render_digit_at(renderer, digits, minutes % 10, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
-            render_digit_at(renderer, digits, COLON_INDEX, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, minutes / 10, (wiggle_index + 2) % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, minutes % 10, (wiggle_index + 3) % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, COLON_INDEX,  (wiggle_index + 1) % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
 
             const size_t seconds = t % 60;
-            render_digit_at(renderer, digits, seconds / 10, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
-            render_digit_at(renderer, digits, seconds % 10, wiggle_index, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, seconds / 10, (wiggle_index + 4) % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, seconds % 10, (wiggle_index + 5) % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
         }
         SDL_RenderPresent(renderer);
         // RENDER END //////////////////////////////
 
         // UPDATE BEGIN //////////////////////////////
         if (wiggle_cooldown <= 0.0f) {
-            wiggle_index = (wiggle_index + 1) % WIGGLE_COUNT;
+            wiggle_index++;
             wiggle_cooldown = WIGGLE_DURATION;
         }
         wiggle_cooldown -= DELTA_TIME;
