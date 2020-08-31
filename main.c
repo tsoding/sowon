@@ -1,20 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 #include <SDL.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 600
 #define FPS 60
 #define DELTA_TIME (1.0f / FPS)
-#define SPRITE_DIGIT_WIDTH (300 / 2)
-#define SPRITE_DIGIT_HEIGHT (380 / 2)
-#define DIGIT_WIDTH (300 / 2)
-#define DIGIT_HEIGHT (380 / 2)
-#define DIGITS_COUNT 11
+#define SPRITE_CHAR_WIDTH (300 / 2)
+#define SPRITE_CHAR_HEIGHT (380 / 2)
+#define CHAR_WIDTH (300 / 2)
+#define CHAR_HEIGHT (380 / 2)
+#define CHARS_COUNT 8
+#define TEXT_WIDTH (CHAR_WIDTH * CHARS_COUNT)
+#define TEXT_HEIGHT (CHAR_HEIGHT)
 #define WIGGLE_COUNT 3
 #define WIGGLE_DURATION (0.40 / WIGGLE_COUNT)
 #define COLON_INDEX 10
@@ -78,16 +80,16 @@ SDL_Texture *load_png_file_as_texture(SDL_Renderer *renderer,
 }
 
 void render_digit_at(SDL_Renderer *renderer, SDL_Texture *digits, size_t digit_index,
-                     size_t wiggle_index, int *pen_x, int *pen_y, float scale)
+                     size_t wiggle_index, int *pen_x, int *pen_y, float user_scale, float fit_scale)
 {
-    const int effective_digit_width = (int) floorf((float) DIGIT_WIDTH * scale);
-    const int effective_digit_height = (int) floorf((float) DIGIT_HEIGHT * scale);
+    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
+    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
 
     const SDL_Rect src_rect = {
-        (int) (digit_index * SPRITE_DIGIT_WIDTH),
-        (int) (wiggle_index * SPRITE_DIGIT_HEIGHT),
-        SPRITE_DIGIT_WIDTH,
-        SPRITE_DIGIT_HEIGHT
+        (int) (digit_index * SPRITE_CHAR_WIDTH),
+        (int) (wiggle_index * SPRITE_CHAR_HEIGHT),
+        SPRITE_CHAR_WIDTH,
+        SPRITE_CHAR_HEIGHT
     };
     const SDL_Rect dst_rect = {
         *pen_x,
@@ -99,25 +101,43 @@ void render_digit_at(SDL_Renderer *renderer, SDL_Texture *digits, size_t digit_i
     *pen_x += effective_digit_width;
 }
 
-void initial_pen(SDL_Window *window, int *pen_x, int *pen_y, float scale)
+void initial_pen(SDL_Window *window, int *pen_x, int *pen_y, float user_scale, float *fit_scale)
 {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
 
-    const int effective_digit_width = (int) floorf((float) DIGIT_WIDTH * scale);
-    const int effective_digit_height = (int) floorf((float) DIGIT_HEIGHT * scale);
-    *pen_x = w / 2 - effective_digit_width * 8 / 2;
+    float text_aspect_ratio = (float) TEXT_WIDTH / (float) TEXT_HEIGHT;
+    float window_aspect_ratio = (float) w / (float) h;
+    if(text_aspect_ratio > window_aspect_ratio) {
+        *fit_scale = (float) w / (float) TEXT_WIDTH;
+    } else {
+        *fit_scale = (float) h / (float) TEXT_HEIGHT;
+    }
+
+    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * *fit_scale);
+    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * *fit_scale);
+    *pen_x = w / 2 - effective_digit_width * CHARS_COUNT / 2;
     *pen_y = h / 2 - effective_digit_height / 2;
 }
 
+typedef enum {
+    MODE_ASCENDING = 0,
+    MODE_COUNTDOWN,
+    MODE_CLOCK,
+} Mode;
+
 int main(int argc, char **argv)
 {
-    int ascending = 1;
-    float time = 0.0f;
+    Mode mode = MODE_ASCENDING;
+    float displayed_time = 0.0f;
 
     if (argc > 1) {
-        ascending = 0;
-        time = strtof(argv[1], NULL);
+        if (strcmp(argv[1], "clock") == 0) {
+            mode = MODE_CLOCK;
+        } else {
+            mode = MODE_COUNTDOWN;
+            displayed_time = strtof(argv[1], NULL);
+        }
     }
 
     secc(SDL_Init(SDL_INIT_VIDEO));
@@ -125,7 +145,7 @@ int main(int argc, char **argv)
     SDL_Window *window =
         secp(SDL_CreateWindow(
                  "sowon",
-                 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
+                 0, 0, TEXT_WIDTH, TEXT_HEIGHT,
                  SDL_WINDOW_RESIZABLE));
 
     SDL_Renderer *renderer =
@@ -142,7 +162,7 @@ int main(int argc, char **argv)
     size_t wiggle_index = 0;
     float wiggle_cooldown = WIGGLE_DURATION;
     int paused = 0;
-    float scale = 1.0f;
+    float user_scale = 1.0f;
     while (!quit) {
         // INPUT BEGIN //////////////////////////////
         SDL_Event event = {0};
@@ -163,17 +183,30 @@ int main(int argc, char **argv)
                     }
                 } break;
 
+                case SDLK_KP_PLUS:
                 case SDLK_EQUALS: {
-                    scale += SCALE_FACTOR * scale;
+                    user_scale += SCALE_FACTOR * user_scale;
                 } break;
 
+                case SDLK_KP_MINUS:
                 case SDLK_MINUS: {
-                    scale -= SCALE_FACTOR * scale;
+                    user_scale -= SCALE_FACTOR * user_scale;
                 } break;
 
+                case SDLK_KP_0:
                 case SDLK_0: {
-                    scale = 1.0f;
+                    user_scale = 1.0f;
                 } break;
+                }
+            } break;
+
+            case SDL_MOUSEWHEEL: {
+                if (SDL_GetModState() & KMOD_CTRL) {
+                    if (event.wheel.y > 0) {
+                        user_scale += SCALE_FACTOR * user_scale;
+                    } else if (event.wheel.y < 0) {
+                        user_scale -= SCALE_FACTOR * user_scale;
+                    }
                 }
             } break;
 
@@ -187,23 +220,24 @@ int main(int argc, char **argv)
         SDL_RenderClear(renderer);
         {
             int pen_x, pen_y;
-            initial_pen(window, &pen_x, &pen_y, scale);
+            float fit_scale = 1.0;
+            initial_pen(window, &pen_x, &pen_y, user_scale, &fit_scale);
 
-            const size_t t = (size_t) ceilf(fmaxf(time, 0.0f));
+            const size_t t = (size_t) ceilf(fmaxf(displayed_time, 0.0f));
 
             const size_t hours = t / 60 / 60;
-            render_digit_at(renderer, digits, hours / 10,    wiggle_index      % WIGGLE_COUNT, &pen_x, &pen_y, scale);
-            render_digit_at(renderer, digits, hours % 10,   (wiggle_index + 1) % WIGGLE_COUNT, &pen_x, &pen_y, scale);
-            render_digit_at(renderer, digits, COLON_INDEX,   wiggle_index      % WIGGLE_COUNT, &pen_x, &pen_y, scale);
+            render_digit_at(renderer, digits, hours / 10,   wiggle_index      % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, hours % 10,  (wiggle_index + 1) % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, COLON_INDEX,  wiggle_index      % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
 
             const size_t minutes = t / 60 % 60;
-            render_digit_at(renderer, digits, minutes / 10, (wiggle_index + 2) % WIGGLE_COUNT, &pen_x, &pen_y, scale);
-            render_digit_at(renderer, digits, minutes % 10, (wiggle_index + 3) % WIGGLE_COUNT, &pen_x, &pen_y, scale);
-            render_digit_at(renderer, digits, COLON_INDEX,  (wiggle_index + 1) % WIGGLE_COUNT, &pen_x, &pen_y, scale);
+            render_digit_at(renderer, digits, minutes / 10, (wiggle_index + 2) % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, minutes % 10, (wiggle_index + 3) % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, COLON_INDEX,  (wiggle_index + 1) % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
 
             const size_t seconds = t % 60;
-            render_digit_at(renderer, digits, seconds / 10, (wiggle_index + 4) % WIGGLE_COUNT, &pen_x, &pen_y, scale);
-            render_digit_at(renderer, digits, seconds % 10, (wiggle_index + 5) % WIGGLE_COUNT, &pen_x, &pen_y, scale);
+            render_digit_at(renderer, digits, seconds / 10, (wiggle_index + 4) % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
+            render_digit_at(renderer, digits, seconds % 10, (wiggle_index + 5) % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
         }
         SDL_RenderPresent(renderer);
         // RENDER END //////////////////////////////
@@ -216,14 +250,24 @@ int main(int argc, char **argv)
         wiggle_cooldown -= DELTA_TIME;
 
         if (!paused) {
-            if (ascending) {
-                time += DELTA_TIME;
-            } else {
-                if (time > 1e-6) {
-                    time -= DELTA_TIME;
+            switch (mode) {
+            case MODE_ASCENDING: {
+                displayed_time += DELTA_TIME;
+            } break;
+            case MODE_COUNTDOWN: {
+                if (displayed_time > 1e-6) {
+                    displayed_time -= DELTA_TIME;
                 } else {
-                    time = 0.0f;
+                    displayed_time = 0.0f;
                 }
+            } break;
+            case MODE_CLOCK: {
+                time_t t = time(NULL);
+                struct tm *tm = localtime(&t);
+                displayed_time = tm->tm_sec
+                               + tm->tm_min  * 60
+                               + tm->tm_hour * 60 * 60;
+            } break;
             }
         }
         // UPDATE END //////////////////////////////
