@@ -126,6 +126,35 @@ typedef enum {
     MODE_CLOCK,
 } Mode;
 
+float parse_time(const char *time)
+{
+    float result = 0.0f;
+    size_t len = strlen(time);
+    for(size_t i = len - 1; i > 0; --i) {
+        float base;
+        switch (time[i]) {
+        case 's': base = 1.0f;          break;
+        case 'm': base = 60.0f;         break;
+        case 'h': base = 60.0f * 60.0f; break;
+        default: continue;
+        }
+        float exponent = 1.0f;
+        for (size_t j = 1; j <= i + 1; j++) {
+            if(isdigit(time[i - j])) {
+                result += (time[i - j] - '0') * base * exponent;
+                exponent *= 10.0f;
+            } else {
+                break;
+            }
+        }
+    }
+    if(result > 0.0f) {
+        return result;
+    } else {
+        return strtof(time, NULL);
+    }
+}
+
 int main(int argc, char **argv)
 {
     Mode mode = MODE_ASCENDING;
@@ -139,7 +168,7 @@ int main(int argc, char **argv)
             mode = MODE_CLOCK;
         } else {
             mode = MODE_COUNTDOWN;
-            displayed_time = strtof(argv[i], NULL);
+            displayed_time = parse_time(argv[i]);
         }
     }
 
