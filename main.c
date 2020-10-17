@@ -139,7 +139,7 @@ float parse_time(const char *time)
         default: continue;
         }
         float exponent = 1.0f;
-        for (size_t j = 1; j <= i + 1; j++) {
+        for (size_t j = 1; j <= i; j++) {
             if(isdigit(time[i - j])) {
                 result += (time[i - j] - '0') * base * exponent;
                 exponent *= 10.0f;
