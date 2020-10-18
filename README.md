@@ -29,8 +29,9 @@ $ make
 
 ```console
 > cd path\to\sowon
-> 7z x SDL2-devel-2.0.12-VC.zip
+> tar -xf SDL2-devel-2.0.12-VC.zip
 > move SDL2-2.0.12 SDL2
+> del SDL2-devel-2.0.12-VC.zip
 > build_msvc
 ```
 
