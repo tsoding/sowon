@@ -1,3 +1,6 @@
 sowon
 *.kra
 *~
+SDL2
+*.obj
+*.exe

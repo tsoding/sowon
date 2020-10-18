@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,7 +19,7 @@
 #define TEXT_WIDTH (CHAR_WIDTH * CHARS_COUNT)
 #define TEXT_HEIGHT (CHAR_HEIGHT)
 #define WIGGLE_COUNT 3
-#define WIGGLE_DURATION (0.40 / WIGGLE_COUNT)
+#define WIGGLE_DURATION (0.40f / WIGGLE_COUNT)
 #define COLON_INDEX 10
 #define MAIN_COLOR_R 220
 #define MAIN_COLOR_G 220
@@ -273,8 +274,8 @@ int main(int argc, char **argv)
                 time_t t = time(NULL);
                 struct tm *tm = localtime(&t);
                 displayed_time = tm->tm_sec
-                               + tm->tm_min  * 60
-                               + tm->tm_hour * 60 * 60;
+                               + tm->tm_min  * 60.0f
+                               + tm->tm_hour * 60.0f * 60.0f;
             } break;
             }
         }
