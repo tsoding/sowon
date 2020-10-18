@@ -6,8 +6,32 @@
 
 Dependencies: [SDL2](https://www.libsdl.org/download-2.0.php)
 
+### Debian
 ```console
+$ sudo apt-get install libsdl2-dev
 $ make
+```
+
+### MacOS
+
+```console
+$ brew install sdl2 pkg-config
+$ make
+```
+
+### Windows
+
+#### Visual Studio
+
+- Enter the Visual Studio Command Line Development Environment https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line
+  - Basically just find `vcvarsall.bat` and run `vcvarsall.bat x64` inside of cmd
+- Download [SDL2 VC Development Libraries](https://libsdl.org/release/SDL2-devel-2.0.12-VC.zip) and copy it to `path\to\sowon`
+
+```console
+> cd path\to\sowon
+> 7z x SDL2-devel-2.0.12-VC.zip
+> move SDL2-2.0.12 SDL2
+> build_msvc
 ```
 
 ## Usage
