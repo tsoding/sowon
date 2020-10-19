@@ -126,6 +126,36 @@ typedef enum {
     MODE_CLOCK,
 } Mode;
 
+float parse_time(const char *time)
+{
+    float result = 0.0f;
+
+    while (*time) {
+        char *endptr = NULL;
+        float x = strtof(time, &endptr);
+
+        if (time == endptr) {
+            fprintf(stderr, "`%s` is not a number\n", time);
+            exit(1);
+        }
+
+        switch (*endptr) {
+        case '\0':
+        case 's': result += x;                 break;
+        case 'm': result += x * 60.0f;         break;
+        case 'h': result += x * 60.0f * 60.0f; break;
+        default:
+            fprintf(stderr, "`%c` is an unknown time unit\n", *endptr);
+            exit(1);
+        }
+
+        time = endptr;
+        if (*time) time += 1;
+    }
+
+    return result;
+}
+
 int main(int argc, char **argv)
 {
     Mode mode = MODE_ASCENDING;
@@ -139,7 +169,7 @@ int main(int argc, char **argv)
             mode = MODE_CLOCK;
         } else {
             mode = MODE_COUNTDOWN;
-            displayed_time = strtof(argv[i], NULL);
+            displayed_time = parse_time(argv[i]);
         }
     }
 
