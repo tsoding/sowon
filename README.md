@@ -1,3 +1,5 @@
+[![Build Status](https://github.com/tsoding/sowon/workflows/CI/badge.svg)](https://github.com/tsoding/sowon/actions)
+
 # Sowon
 
 ![demo](./demo.gif)
