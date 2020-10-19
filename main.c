@@ -129,30 +129,31 @@ typedef enum {
 float parse_time(const char *time)
 {
     float result = 0.0f;
-    size_t len = strlen(time);
-    for(size_t i = len - 1; i > 0; --i) {
-        float base;
-        switch (time[i]) {
-        case 's': base = 1.0f;          break;
-        case 'm': base = 60.0f;         break;
-        case 'h': base = 60.0f * 60.0f; break;
-        default: continue;
+
+    while (*time) {
+        char *endptr = NULL;
+        float x = strtof(time, &endptr);
+
+        if (time == endptr) {
+            fprintf(stderr, "`%s` is not a number\n", time);
+            exit(1);
         }
-        float exponent = 1.0f;
-        for (size_t j = 1; j <= i; j++) {
-            if(isdigit(time[i - j])) {
-                result += (time[i - j] - '0') * base * exponent;
-                exponent *= 10.0f;
-            } else {
-                break;
-            }
+
+        switch (*endptr) {
+        case '\0':
+        case 's': result += x;                 break;
+        case 'm': result += x * 60.0f;         break;
+        case 'h': result += x * 60.0f * 60.0f; break;
+        default:
+            fprintf(stderr, "`%c` is an unknown time unit\n", *endptr);
+            exit(1);
         }
+
+        time = endptr;
+        if (*time) time += 1;
     }
-    if(result > 0.0f) {
-        return result;
-    } else {
-        return strtof(time, NULL);
-    }
+
+    return result;
 }
 
 int main(int argc, char **argv)
