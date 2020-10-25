@@ -52,4 +52,4 @@ jobs:
           mv SDL2-2.0.12 SDL2
       - name: build sowon
         run: |
-          build_msvc.bat
+          ./build_msvc.bat
