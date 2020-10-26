@@ -10,7 +10,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -qq libsdl2-dev
-      - name: build the game
+      - name: build sowon
         run: |
           make
         env:
@@ -23,7 +23,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -qq libsdl2-dev
-      - name: build the game
+      - name: build sowon
         run: |
           make
         env:
@@ -34,9 +34,22 @@ jobs:
       - uses: actions/checkout@v1
       - name: install dependencies
         run: brew install sdl2 pkg-config
-      - name: build the game
+      - name: build sowon
         run: |
           make
         env:
           CC: clang
-  # TODO(#14): there is no build for Windows
+  build-windows-msvc:
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v1
+        # this runs vcvarsall for us, so we get the MSVC toolchain in PATH.
+      - uses: seanmiddleditch/gha-setup-vsdevenv@master
+      - name: download sdl2
+        run: |
+          curl -fsSL -o SDL2-devel-2.0.12-VC.zip https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip
+          tar -xf SDL2-devel-2.0.12-VC.zip
+          mv SDL2-2.0.12 SDL2
+      - name: build sowon
+        run: |
+          ./build_msvc.bat
