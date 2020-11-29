@@ -58,13 +58,13 @@ jobs:
     runs-on: macos-latest
     name: FreeBSD LLVM Clang build
     steps:
-    - uses: actions/checkout@v2
-    - name: Build on FreeBSD
-      id: build
-      uses: vmactions/freebsd-vm@v0.0.9
-      with:
-        usesh: true
-        prepare: pkg install -y sdl2 pkgconf
-        run: |
-          freebsd-version
-          make
+      - uses: actions/checkout@v2
+      - name: Build on FreeBSD
+        id: build
+        uses: vmactions/freebsd-vm@v0.0.9
+        with:
+          usesh: true
+          prepare: pkg install -y sdl2 pkgconf
+          run: |
+            freebsd-version
+            make
