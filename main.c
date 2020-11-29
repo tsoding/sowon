@@ -6,8 +6,7 @@
 
 #include <SDL.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "./digits.h"
 
 #define FPS 60
 #define DELTA_TIME (1.0f / FPS)
@@ -50,22 +49,15 @@ void *secp(void *ptr)
     return ptr;
 }
 
-SDL_Surface *load_png_file_as_surface(const char *image_filename)
+SDL_Surface *load_png_file_as_surface()
 {
-    int width, height;
-    uint32_t *image_pixels = (uint32_t *) stbi_load(image_filename, &width, &height, NULL, 4);
-    if (image_pixels == NULL) {
-        fprintf(stderr, "[ERROR] Could not load `%s` as PNG\n", image_filename);
-        abort();
-    }
-
     SDL_Surface* image_surface =
         secp(SDL_CreateRGBSurfaceFrom(
-                 image_pixels,
-                 (int) width,
-                 (int) height,
+                 png,
+                 (int) png_width,
+                 (int) png_height,
                  32,
-                 (int) width * 4,
+                 (int) png_width * 4,
                  0x000000FF,
                  0x0000FF00,
                  0x00FF0000,
@@ -73,10 +65,9 @@ SDL_Surface *load_png_file_as_surface(const char *image_filename)
     return image_surface;
 }
 
-SDL_Texture *load_png_file_as_texture(SDL_Renderer *renderer,
-                                      const char *image_filename)
+SDL_Texture *load_png_file_as_texture(SDL_Renderer *renderer)
 {
-    SDL_Surface *image_surface = load_png_file_as_surface(image_filename);
+    SDL_Surface *image_surface = load_png_file_as_surface();
     return secp(SDL_CreateTextureFromSurface(renderer, image_surface));
 }
 
@@ -189,7 +180,7 @@ int main(int argc, char **argv)
 
     secc(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"));
 
-    SDL_Texture *digits = load_png_file_as_texture(renderer, "./digits.png");
+    SDL_Texture *digits = load_png_file_as_texture(renderer);
     secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
 
     if (paused) {
