@@ -1,6 +1,9 @@
 sowon
+png2c
+digits.h
 *.kra
 *~
 SDL2
 *.obj
 *.exe
+.dSYM/
