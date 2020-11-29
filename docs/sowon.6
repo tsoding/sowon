@@ -1,0 +1,41 @@
+.Dd November 29, 2020
+.Dt SOWON 6
+.Os AUXILIARY
+.Sh NAME
+.Nm sowon
+.Nd Starting soon timer
+.Sh SYNOPSIS
+.Nm
+.Op Fl p
+.Op Ar seconds | Ar clock
+.Sh DESCRIPTION
+.Nm
+is a graphical countdown/timer program.
+With no arguments provided, it starts in ascending mode. With an amount of
+seconds provided, it starts in descending mode. Clock starts it in clock
+mode, that displays the current time.
+.br
+.Sh OPTIONS
+.Bl -tag -width indent
+.It Fl p
+start in paused state
+.Sh KEY BINDINGS
+.Bl -tag -width indent
+.It SPACE
+Toggle pause
+.It =
+Zoom in
+.It -
+Zoom out
+.It 0
+Zoom 100%
+.Sh FILES
+.Pa /usr/local/bin/sowon
+.br
+.Sh AUTHOR
+.An Alexey Kutepov aka. rexim
+.Aq reximkut AT gmail DOT com
+.br
+.An Source code and issue tracker at
+.Aq https://github.com/tsoding/sowon
+.P
