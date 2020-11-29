@@ -230,13 +230,11 @@ int main(int argc, char **argv)
 
                 case SDLK_F5: {
                     displayed_time = 0.0f;
+                    paused = 0;
                     for (int i = 1; i < argc; ++i) {
                         if (strcmp(argv[i], "-p") == 0) {
                             paused = 1;
-                        } else if (strcmp(argv[i], "clock") == 0) {
-                            mode = MODE_CLOCK;
                         } else {
-                            mode = MODE_COUNTDOWN;
                             displayed_time = parse_time(argv[i]);
                         }
                     }
