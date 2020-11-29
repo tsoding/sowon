@@ -227,6 +227,16 @@ int main(int argc, char **argv)
                 case SDLK_0: {
                     user_scale = 1.0f;
                 } break;
+
+                case SDLK_F11: {
+                    Uint32 window_flags;
+                    secc(window_flags = SDL_GetWindowFlags(window));
+                    if(window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+                        secc(SDL_SetWindowFullscreen(window, 0));
+                    } else {
+                        secc(SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP));
+                    }
+                } break;
                 }
             } break;
 
