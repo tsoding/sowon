@@ -12,8 +12,9 @@
 .Nm
 is a graphical countdown/timer program.
 With no arguments provided, it starts in ascending mode. With an amount of
-seconds provided, it starts in descending mode. Clock starts it in clock
-mode, that displays the current time.
+seconds provided, it starts in descending mode. Accepts human readable time
+intervals (1h23m54s). Clock starts it in clock mode, that displays
+the current time.
 .br
 .Sh OPTIONS
 .Bl -tag -width indent
@@ -29,6 +30,10 @@ Zoom in
 Zoom out
 .It 0
 Zoom 100%
+.It F5
+Restart
+.It F11
+Fullscreen
 .Sh FILES
 .Pa /usr/local/bin/sowon
 .br
