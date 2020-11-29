@@ -57,3 +57,5 @@ $ make
 | <kbd>=</kbd> | Zoom in |
 | <kbd>-</kbd> | Zoom out |
 | <kbd>0</kbd> | Zoom 100% |
+| <kbd>F5</kbd> | Restart |
+| <kbd>F11</kbd> | Fullscreen |

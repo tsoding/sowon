@@ -228,6 +228,25 @@ int main(int argc, char **argv)
                     user_scale = 1.0f;
                 } break;
 
+                case SDLK_F5: {
+                    displayed_time = 0.0f;
+                    for (int i = 1; i < argc; ++i) {
+                        if (strcmp(argv[i], "-p") == 0) {
+                            paused = 1;
+                        } else if (strcmp(argv[i], "clock") == 0) {
+                            mode = MODE_CLOCK;
+                        } else {
+                            mode = MODE_COUNTDOWN;
+                            displayed_time = parse_time(argv[i]);
+                        }
+                    }
+                    if (paused) {
+                        secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
+                    } else {
+                        secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
+                    }
+                } break;
+
                 case SDLK_F11: {
                     Uint32 window_flags;
                     secc(window_flags = SDL_GetWindowFlags(window));
