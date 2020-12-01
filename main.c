@@ -4,9 +4,8 @@
 #include <string.h>
 #include <time.h>
 
+#include "./stb_image.h"
 #include <SDL.h>
-
-#include "./digits.h"
 
 #define FPS 60
 #define DELTA_TIME (1.0f / FPS)
@@ -48,6 +47,11 @@ void *secp(void *ptr)
 
     return ptr;
 }
+
+extern char *png_data_ptr;
+extern int const png_data_len;
+int png_width, png_height, n;
+stbi_uc *png;
 
 SDL_Surface *load_png_file_as_surface()
 {
@@ -179,6 +183,8 @@ int main(int argc, char **argv)
                  SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED));
 
     secc(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"));
+
+    png = (stbi_uc *)stbi_load_from_memory(png_data_ptr, png_data_len, &png_width, &png_height, &n, 0);
 
     SDL_Texture *digits = load_png_file_as_texture(renderer);
     secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
