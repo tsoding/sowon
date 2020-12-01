@@ -184,7 +184,7 @@ int main(int argc, char **argv)
 
     secc(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"));
 
-    png = (stbi_uc *)stbi_load_from_memory(png_data_ptr, png_data_len, &png_width, &png_height, &n, 0);
+    png = (stbi_uc *)stbi_load_from_memory((const stbi_uc *)png_data_ptr, png_data_len, &png_width, &png_height, &n, 0);
 
     SDL_Texture *digits = load_png_file_as_texture(renderer);
     secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
