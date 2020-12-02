@@ -2,104 +2,63 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  # build-linux-gcc:
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #     - uses: actions/checkout@v1
-  #     - name: install dependencies
-  #       run: |
-  #         sudo apt-get update
-  #         sudo apt-get install -qq libsdl2-dev
-  #     - name: build sowon
-  #       run: |
-  #         make
-  #       env:
-  #         CC: gcc
-  build-linux-zig:
+  build-linux:
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+      - uses: goto-bus-stop/setup-zig@v1
+        with:
+          version: master
       - name: install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -qq libsdl2-dev
-      - name: download zig
-        run: |
-          curl -fsSL -o zig-linux-x86_64-0.7.0+51d7c14ce.tar.xz https://ziglang.org/builds/zig-linux-x86_64-0.7.0+51d7c14ce.tar.xz
-          tar -xf zig-linux-x86_64-0.7.0+51d7c14ce.tar.xz
       - name: build sowon
-        run: |
-          zig-linux-x86_64-0.7.0+51d7c14ce/zig build
-  # build-linux-clang:
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #     - uses: actions/checkout@v1
-  #     - name: install dependencies
-  #       run: |
-  #         sudo apt-get update
-  #         sudo apt-get install -qq libsdl2-dev
-  #     - name: build sowon
-  #       run: |
-  #         make
-  #       env:
-  #         CC: clang
+        run: zig build
+  
   build-macos:
     runs-on: macOS-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+      - uses: goto-bus-stop/setup-zig@v1
+        with:
+          version: master
       - name: install dependencies
         run: brew install sdl2 pkg-config
-      - name: download zig
-        run: |
-          curl -fsSL -o zig-macos-x86_64-0.7.0+c91c4dc25.tar.xz https://ziglang.org/builds/zig-macos-x86_64-0.7.0+c91c4dc25.tar.xz
-          tar -xf zig-macos-x86_64-0.7.0+c91c4dc25.tar.xz
       - name: build sowon
-        run: |
-          zig-macos-x86_64-0.7.0+c91c4dc25/zig build
-  # build-windows-msvc:
-  #   runs-on: windows-2019
-  #   steps:
-  #     - uses: actions/checkout@v1
-  #       # this runs vcvarsall for us, so we get the MSVC toolchain in PATH.
-  #     - uses: seanmiddleditch/gha-setup-vsdevenv@master
-  #     - name: download sdl2
-  #       run: |
-  #         curl -fsSL -o SDL2-devel-2.0.12-VC.zip https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip
-  #         tar -xf SDL2-devel-2.0.12-VC.zip
-  #         mv SDL2-2.0.12 SDL2
-  #     - name: build sowon
-  #       run: |
-  #         ./build_msvc.bat
-  build-windows-msvc-zig:
+        run: zig build
+  
+  build-freebsd:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v2
+      # can't figure out how to use goto-bus-stop/setup-zig. results in 'zig not found' error
+      # i tried appending zig=$(which zig) to $GITHUB_ENV and adding envs: 'zig', but that didn't work either
+      - name: Build on FreeBSD
+        id: build
+        uses: vmactions/freebsd-vm@v0.0.9
+        with:
+          usesh: true
+          prepare: |
+            pkg install -y sdl2 pkgconf curl
+          run: |
+            freebsd-version
+            curl -fsSL -o zig-freebsd-x86_64-0.7.0+c91c4dc25.tar.xz https://ziglang.org/builds/zig-freebsd-x86_64-0.7.0+c91c4dc25.tar.xz
+            tar -xf zig-freebsd-x86_64-0.7.0+c91c4dc25.tar.xz
+            zig-freebsd-x86_64-0.7.0+c91c4dc25/zig build
+  
+  build-windows-msvc:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v1
-        # this runs vcvarsall for us, so we get the MSVC toolchain in PATH.
+      - uses: actions/checkout@v2
+      - uses: goto-bus-stop/setup-zig@v1
+        with:
+          version: master
       - uses: seanmiddleditch/gha-setup-vsdevenv@master
       - name: download sdl2
         run: |
           curl -fsSL -o SDL2-devel-2.0.12-VC.zip https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip
           tar -xf SDL2-devel-2.0.12-VC.zip
           mv SDL2-2.0.12 SDL2
-      - name: download zig
-        run: |
-          curl -fsSL -o zig-windows-x86_64-0.7.0+51d7c14ce.zip https://ziglang.org/builds/zig-windows-x86_64-0.7.0+51d7c14ce.zip
-          tar -xf zig-windows-x86_64-0.7.0+51d7c14ce.zip
       - name: build sowon
-        run: |
-          zig-windows-x86_64-0.7.0+51d7c14ce/zig build -Dtarget=x86_64-windows-msvc
-  
-  # build-freebsd:
-  #   runs-on: macos-latest
-  #   name: FreeBSD LLVM Clang build
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - name: Build on FreeBSD
-  #     id: build
-  #     uses: vmactions/freebsd-vm@v0.0.9
-  #     with:
-  #       usesh: true
-  #       prepare: pkg install -y sdl2 pkgconf
-  #       run: |
-  #         freebsd-version
-  #         make
+        run: zig build -Dtarget=x86_64-windows-msvc  
