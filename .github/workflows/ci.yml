@@ -43,19 +43,19 @@ jobs:
   #         make
   #       env:
   #         CC: clang
-  # build-macos:
-  #   runs-on: macOS-latest
-  #   steps:
-  #     - uses: actions/checkout@v1
-  #     - name: install dependencies
-  #       run: brew install sdl2 pkg-config
-  #     - name: download zig
-  #       run: |
-  #         curl -fsSL -o zig-macos-x86_64-0.7.0+c91c4dc25.tar.xz https://ziglang.org/builds/zig-macos-x86_64-0.7.0+c91c4dc25.tar.xz
-  #         tar -xf zig-macos-x86_64-0.7.0+c91c4dc25.tar.xz
-  #     - name: build sowon
-  #       run: |
-  #       zig-macos-x86_64-0.7.0+c91c4dc25/zig build
+  build-macos:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: install dependencies
+        run: brew install sdl2 pkg-config
+      - name: download zig
+        run: |
+          curl -fsSL -o zig-macos-x86_64-0.7.0+c91c4dc25.tar.xz https://ziglang.org/builds/zig-macos-x86_64-0.7.0+c91c4dc25.tar.xz
+          tar -xf zig-macos-x86_64-0.7.0+c91c4dc25.tar.xz
+      - name: build sowon
+        run: |
+          zig-macos-x86_64-0.7.0+c91c4dc25/zig build
   # build-windows-msvc:
   #   runs-on: windows-2019
   #   steps:
