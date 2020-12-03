@@ -1,16 +1,6 @@
 const std = @import("std");
 const Builder = std.build.Builder;
 
-// fn addStaticLibrary(b: *Builder, name: []const u8, root_src: ?[]const u8, target: std.zig.CrossTarget, mode: std.builtin.Mode) *std.build.LibExeObjStep {
-//     const lib = b.addStaticLibrary(name, root_src);
-//     lib.setTarget(target);
-//     lib.setBuildMode(mode);
-//     return lib;
-// }
-
-//     const digits_lib = addStaticLibrary(b, "digits_png", "digits.zig", target, mode);
-//     const stb_image_lib = addStaticLibrary(b, "stb_image_impl", "stb_image_impl.c", target, mode);
-
 pub fn build(b: *Builder) void {
     const target = b.standardTargetOptions(.{});
     const mode = b.standardReleaseOptions();
@@ -18,8 +8,17 @@ pub fn build(b: *Builder) void {
     const digits_lib = b.addStaticLibrary("digits_png", "digits.zig");
     digits_lib.setTarget(target);
     digits_lib.setBuildMode(mode);
+
     const stb_image_lib = b.addStaticLibrary("stb_image_impl", "stb_image_impl.c");
     stb_image_lib.linkLibC();
+    // stb_image_lib.setTarget(target);
+    // stb_image_lib.setBuildMode(mode);
+    // adding these 2 lines causes windows ci to fail... not sure why
+    // error message is:
+    // Run zig build -Dtarget=x86_64-windows-msvc
+    // error(compilation): clang failed with stderr: In file included from D:\a\sowon\sowon\stb_image_impl.c:2:
+    // D:\a\sowon\sowon/./stb_image.h:324:10: fatal error: 'stdio.h' file not found
+
     const exe = b.addExecutable("sowon", "main.c");
     exe.setTarget(target);
     exe.setBuildMode(mode);
@@ -30,6 +29,8 @@ pub fn build(b: *Builder) void {
     exe.linkSystemLibrary("m");
     exe.linkLibrary(digits_lib);
     exe.linkLibrary(stb_image_lib);
+
+    // windows specific
     if (target.os_tag) |os| {
         if (os == .windows) {
             // set INCLUDES=/I SDL2\include
@@ -47,6 +48,8 @@ pub fn build(b: *Builder) void {
             exe.linkSystemLibrary("SDL2main");
             exe.linkSystemLibrary("Shell32");
             exe.subsystem = .Windows;
+
+            // workaround for missing includes: https://github.com/ziglang/zig/issues/5402
             if (b.env_map.get("INCLUDE")) |entry| {
                 var it = std.mem.split(entry, ";");
                 while (it.next()) |path| {
