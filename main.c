@@ -227,6 +227,33 @@ int main(int argc, char **argv)
                 case SDLK_0: {
                     user_scale = 1.0f;
                 } break;
+
+                case SDLK_F5: {
+                    displayed_time = 0.0f;
+                    paused = 0;
+                    for (int i = 1; i < argc; ++i) {
+                        if (strcmp(argv[i], "-p") == 0) {
+                            paused = 1;
+                        } else {
+                            displayed_time = parse_time(argv[i]);
+                        }
+                    }
+                    if (paused) {
+                        secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
+                    } else {
+                        secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
+                    }
+                } break;
+
+                case SDLK_F11: {
+                    Uint32 window_flags;
+                    secc(window_flags = SDL_GetWindowFlags(window));
+                    if(window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+                        secc(SDL_SetWindowFullscreen(window, 0));
+                    } else {
+                        secc(SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP));
+                    }
+                } break;
                 }
             } break;
 
