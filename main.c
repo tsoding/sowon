@@ -254,6 +254,14 @@ int main(int argc, char **argv)
                         secc(SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP));
                     }
                 } break;
+
+                /* Quit application after pressing CTRL+Q */
+                case SDLK_q: {
+                    if (event.key.keysym.mod & KMOD_CTRL){
+                        quit = 1;
+                    }
+                } break;
+
                 }
             } break;
 

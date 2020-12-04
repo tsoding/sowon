@@ -59,3 +59,4 @@ $ make
 | <kbd>0</kbd> | Zoom 100% |
 | <kbd>F5</kbd> | Restart |
 | <kbd>F11</kbd> | Fullscreen |
+| <kbd>CTRL+Q</kbd> | Quit |
