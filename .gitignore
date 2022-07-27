@@ -7,3 +7,4 @@ SDL2
 *.obj
 *.exe
 .dSYM/
+*.gz
