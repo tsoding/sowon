@@ -2,7 +2,7 @@ COMMON_CFLAGS=		-Wall -Wextra -std=c99 -pedantic
 CFLAGS+=		`pkg-config --cflags sdl2` $(COMMON_CFLAGS)
 COMMON_LIBS=		-lm
 LIBS=			`pkg-config --libs sdl2` $(COMMON_LIBS)
-PREFIX?=		/usr/local/
+PREFIX?=		/usr/local
 INSTALL?=		install
 
 .PHONY: all
@@ -29,7 +29,7 @@ clean:
 
 .PHONY: install
 install: all
-	$(INSTALL) -d $(DESTDIR)/$(PREFIX)/bin
-	$(INSTALL) -C ./sowon $(DESTDIR)/$(PREFIX)/bin
-	$(INSTALL) -d $(DESTDIR)/$(PREFIX)/man/man6
-	$(INSTALL) -C docs/sowon.6.gz $(DESTDIR)/$(PREFIX)/man/man6
+	$(INSTALL) -d $(DESTDIR)$(PREFIX)/bin
+	$(INSTALL) -C ./sowon $(DESTDIR)$(PREFIX)/bin
+	$(INSTALL) -d $(DESTDIR)$(PREFIX)/man/man6
+	$(INSTALL) -C docs/sowon.6.gz $(DESTDIR)$(PREFIX)/man/man6
