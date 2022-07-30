@@ -158,7 +158,7 @@ int main(int argc, char **argv)
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-p") == 0) {
             paused = 1;
-        } if (strcmp(argv[i], "-e") == 0) {
+        } else if (strcmp(argv[i], "-e") == 0) {
             exit_after_countdown = 1;
         } else if (strcmp(argv[i], "clock") == 0) {
             mode = MODE_CLOCK;
