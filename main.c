@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -148,6 +149,8 @@ float parse_time(const char *time)
     return result;
 }
 
+#define TITLE_CAP 256
+
 int main(int argc, char **argv)
 {
     Mode mode = MODE_ASCENDING;
@@ -196,6 +199,7 @@ int main(int argc, char **argv)
     size_t wiggle_index = 0;
     float wiggle_cooldown = WIGGLE_DURATION;
     float user_scale = 1.0f;
+    char prev_title[TITLE_CAP];
     while (!quit) {
         // INPUT BEGIN //////////////////////////////
         SDL_Event event = {0};
@@ -285,6 +289,7 @@ int main(int argc, char **argv)
 
             const size_t t = (size_t) ceilf(fmaxf(displayed_time, 0.0f));
 
+            // TODO: support amount of hours >99
             const size_t hours = t / 60 / 60;
             render_digit_at(renderer, digits, hours / 10,   wiggle_index      % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
             render_digit_at(renderer, digits, hours % 10,  (wiggle_index + 1) % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
@@ -298,6 +303,13 @@ int main(int argc, char **argv)
             const size_t seconds = t % 60;
             render_digit_at(renderer, digits, seconds / 10, (wiggle_index + 4) % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
             render_digit_at(renderer, digits, seconds % 10, (wiggle_index + 5) % WIGGLE_COUNT, &pen_x, &pen_y, user_scale, fit_scale);
+
+            char title[TITLE_CAP];
+            snprintf(title, sizeof(title), "%02zu:%02zu:%02zu - sowon", hours, minutes, seconds);
+            if (strcmp(prev_title, title) != 0) {
+                SDL_SetWindowTitle(window, title);
+            }
+            memcpy(title, prev_title, TITLE_CAP);
         }
         SDL_RenderPresent(renderer);
         // RENDER END //////////////////////////////
