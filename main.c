@@ -6,7 +6,7 @@
 #include <string.h>
 #include <time.h>
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include "./digits.h"
 
@@ -156,6 +156,7 @@ int main(int argc, char **argv)
 {
     Mode mode = MODE_ASCENDING;
     float displayed_time = 0.0f;
+    float start_time = 0.0f;
     bool paused = false;
     bool exit_after_countdown = false;
 
@@ -168,7 +169,8 @@ int main(int argc, char **argv)
             mode = MODE_CLOCK;
         } else {
             mode = MODE_COUNTDOWN;
-            displayed_time = parse_time(argv[i]);
+            start_time = parse_time(argv[i]);
+            displayed_time = start_time;
         }
     }
 
@@ -237,20 +239,10 @@ int main(int argc, char **argv)
                 } break;
 
                 case SDLK_F5: {
-                    displayed_time = 0.0f;
-                    paused = false;
-                    for (int i = 1; i < argc; ++i) {
-                        if (strcmp(argv[i], "-p") == 0) {
-                            paused = true;
-                        } else {
-                            displayed_time = parse_time(argv[i]);
-                        }
+                    if (mode == MODE_CLOCK) {
+                        break;
                     }
-                    if (paused) {
-                        secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
-                    } else {
-                        secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
-                    }
+                    displayed_time = start_time;
                 } break;
 
                 case SDLK_F11: {
