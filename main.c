@@ -10,7 +10,7 @@
 #include "./digits.h"
 
 #define FPS 60
-#define DELTA_TIME (1.0f / FPS)
+//#define DELTA_TIME (1.0f / FPS)
 #define SPRITE_CHAR_WIDTH (300 / 2)
 #define SPRITE_CHAR_HEIGHT (380 / 2)
 #define CHAR_WIDTH (300 / 2)
@@ -149,6 +149,41 @@ float parse_time(const char *time)
     return result;
 }
 
+typedef struct {
+    Uint32 frame_delay;
+    float dt;
+    Uint64 last_time;
+} FpsDeltaTime;
+
+FpsDeltaTime make_fpsdeltatime(const Uint32 fps_cap)
+{
+    return (FpsDeltaTime){
+        .frame_delay=(1000 / fps_cap),
+        .dt=0.0f,
+        .last_time=SDL_GetPerformanceCounter(),
+    };
+}
+
+void frame_start(FpsDeltaTime *fpsdt)
+{
+    const Uint64 now = SDL_GetPerformanceCounter();
+    const Uint64 elapsed = now - fpsdt->last_time;
+    fpsdt->dt = ((float)elapsed)  / ((float)SDL_GetPerformanceFrequency());
+    // printf("FPS: %f | dt %f\n", 1.0 / fpsdt->dt, fpsdt->dt);
+    fpsdt->last_time = now;
+}
+
+void frame_end(FpsDeltaTime *fpsdt)
+{
+    const Uint64 now = SDL_GetPerformanceCounter();
+    const Uint64 elapsed = now - fpsdt->last_time;
+    const Uint32 cap_frame_end = (Uint32) ((((float)elapsed) * 1000.0f) / ((float)SDL_GetPerformanceFrequency()));
+
+    if (cap_frame_end < fpsdt->frame_delay) {
+        SDL_Delay((fpsdt->frame_delay - cap_frame_end) );
+    }
+}
+
 #define TITLE_CAP 256
 
 int main(int argc, char **argv)
@@ -200,7 +235,9 @@ int main(int argc, char **argv)
     float wiggle_cooldown = WIGGLE_DURATION;
     float user_scale = 1.0f;
     char prev_title[TITLE_CAP];
+    FpsDeltaTime fps_dt = make_fpsdeltatime(FPS);
     while (!quit) {
+        frame_start(&fps_dt);
         // INPUT BEGIN //////////////////////////////
         SDL_Event event = {0};
         while (SDL_PollEvent(&event)) {
@@ -319,16 +356,16 @@ int main(int argc, char **argv)
             wiggle_index++;
             wiggle_cooldown = WIGGLE_DURATION;
         }
-        wiggle_cooldown -= DELTA_TIME;
+        wiggle_cooldown -= fps_dt.dt;
 
         if (!paused) {
             switch (mode) {
             case MODE_ASCENDING: {
-                displayed_time += DELTA_TIME;
+                displayed_time += fps_dt.dt;
             } break;
             case MODE_COUNTDOWN: {
                 if (displayed_time > 1e-6) {
-                    displayed_time -= DELTA_TIME;
+                    displayed_time -= fps_dt.dt;
                 } else {
                     displayed_time = 0.0f;
                     if (exit_after_countdown) {
@@ -348,7 +385,7 @@ int main(int argc, char **argv)
         }
         // UPDATE END //////////////////////////////
 
-        SDL_Delay((int) floorf(DELTA_TIME * 1000.0f));
+        frame_end(&fps_dt);
     }
 
     SDL_Quit();
