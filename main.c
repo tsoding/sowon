@@ -50,7 +50,7 @@ void *secp(void *ptr)
     return ptr;
 }
 
-SDL_Surface *load_png_file_as_surface()
+SDL_Surface *load_png_file_as_surface(void)
 {
     SDL_Surface* image_surface =
         secp(SDL_CreateRGBSurfaceFrom(
