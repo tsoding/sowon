@@ -1,0 +1,2 @@
+in pause but time to zero, instead of current time
+$ sowon -p clock

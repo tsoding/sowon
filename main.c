@@ -32,7 +32,7 @@
 #define BACKGROUND_COLOR_B 24
 #define SCALE_FACTOR 0.15f
 
-
+#define TITLE_CAP 256
 
 typedef enum {
     MODE_ASCENDING = 0,
@@ -65,42 +65,31 @@ void secp(void *ptr)
 
 
 
-SDL_Surface *load_png_file_as_surface()
-{
-    SDL_Surface* image_surface;
-    image_surface =  SDL_CreateRGBSurfaceFrom(
-                        png,
-                        (int) png_width,
-                        (int) png_height,
-                        32,
-                        (int) png_width * 4,
-                        0x000000FF,
-                        0x0000FF00,
-                        0x00FF0000,
-                        0xFF000000);
-
-    secp(image_surface);
-
-    return image_surface;
-}
-
-
-
-
-SDL_Texture *load_png_file_as_texture(SDL_Renderer *renderer)
-{
-    SDL_Surface *image_surface = load_png_file_as_surface();
+// width, height
+void initial_pen(SDL_Window *window,
+                 int *pen_x, int *pen_y, 
+                 float user_scale, float *fit_scale) {
     
-    SDL_Texture *t = SDL_CreateTextureFromSurface(renderer, image_surface);
+    // window size
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
 
-    secp(t);
+    // width/height ratio
+    float text_aspect_ratio = (float) TEXT_WIDTH / (float) TEXT_HEIGHT;
+    float window_aspect_ratio = (float) w / (float) h;
 
-    return t;
+    if(text_aspect_ratio > window_aspect_ratio) {
+        *fit_scale = (float) w / (float) TEXT_WIDTH;
+    } else {
+        *fit_scale = (float) h / (float) TEXT_HEIGHT;
+    }
+
+    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * *fit_scale);
+    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * *fit_scale);
+
+    *pen_x = w / 2 - effective_digit_width * CHARS_COUNT / 2;
+    *pen_y = h / 2 - effective_digit_height / 2;
 }
-
-
-
-
 
 
 
@@ -108,7 +97,9 @@ SDL_Texture *load_png_file_as_texture(SDL_Renderer *renderer)
 void render_digit_at(SDL_Renderer *renderer, 
                      SDL_Texture *digits, 
                      size_t digit_index,
-                     size_t wiggle_index, int *pen_x, int *pen_y, float user_scale, float fit_scale) {
+                     size_t wiggle_index,
+                     int *pen_x, int *pen_y,
+                     float user_scale, float fit_scale) {
 
     const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
     const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
@@ -119,6 +110,7 @@ void render_digit_at(SDL_Renderer *renderer,
         SPRITE_CHAR_WIDTH,
         SPRITE_CHAR_HEIGHT
     };
+
     const SDL_Rect dst_rect = {
         *pen_x,
         *pen_y,
@@ -129,30 +121,11 @@ void render_digit_at(SDL_Renderer *renderer,
     *pen_x += effective_digit_width;
 }
 
-void initial_pen(SDL_Window *window, int *pen_x, int *pen_y, float user_scale, float *fit_scale)
-{
-    int w, h;
-    SDL_GetWindowSize(window, &w, &h);
-
-    float text_aspect_ratio = (float) TEXT_WIDTH / (float) TEXT_HEIGHT;
-    float window_aspect_ratio = (float) w / (float) h;
-    if(text_aspect_ratio > window_aspect_ratio) {
-        *fit_scale = (float) w / (float) TEXT_WIDTH;
-    } else {
-        *fit_scale = (float) h / (float) TEXT_HEIGHT;
-    }
-
-    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * *fit_scale);
-    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * *fit_scale);
-    *pen_x = w / 2 - effective_digit_width * CHARS_COUNT / 2;
-    *pen_y = h / 2 - effective_digit_height / 2;
-}
 
 
 
 
-float parse_time(const char *time)
-{
+float parse_time(const char *time) {
     float result = 0.0f;
 
     while (*time) {
@@ -165,13 +138,24 @@ float parse_time(const char *time)
         }
 
         switch (*endptr) {
-        case '\0':
-        case 's': result += x;                 break;
-        case 'm': result += x * 60.0f;         break;
-        case 'h': result += x * 60.0f * 60.0f; break;
-        default:
-            fprintf(stderr, "`%c` is an unknown time unit\n", *endptr);
-            exit(1);
+            case '\0':
+
+            // seconds
+            case 's':
+                result += x;
+                break;
+            // minutes
+            case 'm':
+                result += x * 60.0f;
+                break;
+            // hours
+            case 'h':
+                result += x * 60.0f * 60.0f;
+                break;
+
+            default:
+                fprintf(stderr, "`%c` is an unknown time unit\n", *endptr);
+                exit(1);
         }
 
         time = endptr;
@@ -181,7 +165,45 @@ float parse_time(const char *time)
     return result;
 }
 
-#define TITLE_CAP 256
+void createWindow(SDL_Window **window) {
+    *window = SDL_CreateWindow(
+                     "sowon",
+                     0, 0, TEXT_WIDTH, TEXT_HEIGHT,
+                     SDL_WINDOW_RESIZABLE);
+    secp(window);
+}
+
+void createRenderer(SDL_Window *window, SDL_Renderer **renderer) {
+    *renderer = SDL_CreateRenderer(window, -1,
+                 SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+
+    secp(renderer);
+}
+
+
+
+SDL_Texture *createTextureFromFile(SDL_Renderer *renderer)
+{
+   SDL_Surface* image_surface;
+    image_surface =  SDL_CreateRGBSurfaceFrom(
+                        png,
+                        (int) png_width,
+                        (int) png_height,
+                        32,
+                        (int) png_width * 4,
+                        0x000000FF,
+                        0x0000FF00,
+                        0x00FF0000,
+                        0xFF000000);
+
+    secp(image_surface);
+    
+    SDL_Texture *digits = SDL_CreateTextureFromSurface(renderer, image_surface);
+
+    secp(digits);
+    secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
+    return digits;
+}
 
 int main(int argc, char **argv) {
     Mode mode = MODE_ASCENDING;
@@ -204,35 +226,23 @@ int main(int argc, char **argv) {
     }
 
     secc(SDL_Init(SDL_INIT_VIDEO));
-    
+    secc(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"));
 
     // CREATE WINDOW
     SDL_Window *window;
-    window = SDL_CreateWindow(
-                 "sowon",
-                 0, 0, TEXT_WIDTH, TEXT_HEIGHT,
-                 SDL_WINDOW_RESIZABLE);
+    createWindow(&window);
 
-    secp(window);
+    
 
     // CREATE RENDERER
     SDL_Renderer *renderer;
-    renderer = SDL_CreateRenderer(window, -1,
-                 SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+    createRenderer(window, &renderer);
 
-    secp(renderer);
+    // CREATE DIGITS TEXTURE
+    SDL_Texture *digits = createTextureFromFile(renderer);
 
-    secc(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"));
 
-    // CREATE TEXTURE
-    SDL_Texture *digits = load_png_file_as_texture(renderer);
-    secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
-
-    if (paused) {
-        secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
-    } else {
-        secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
-    }
+    
 
     int quit = 0;
     size_t wiggle_index = 0;
@@ -241,6 +251,13 @@ int main(int argc, char **argv) {
     char prev_title[TITLE_CAP];
 
     while (!quit) {
+
+        if (paused) {
+            secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
+        } else {
+            secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
+        }
+
         // INPUT BEGIN //////////////////////////////
         SDL_Event event = {0};
         while (SDL_PollEvent(&event)) {
@@ -253,11 +270,6 @@ int main(int argc, char **argv) {
                 switch (event.key.keysym.sym) {
                 case SDLK_SPACE: {
                     paused = !paused;
-                    if (paused) {
-                        secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
-                    } else {
-                        secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
-                    }
                 } break;
 
                 case SDLK_KP_PLUS:
