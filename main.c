@@ -32,6 +32,18 @@
 #define BACKGROUND_COLOR_B 24
 #define SCALE_FACTOR 0.15f
 
+
+
+typedef enum {
+    MODE_ASCENDING = 0,
+    MODE_COUNTDOWN,
+    MODE_CLOCK,
+} Mode;
+
+
+
+// ERROR HANDLER
+
 void secc(int code)
 {
     if (code < 0) {
@@ -40,14 +52,12 @@ void secc(int code)
     }
 }
 
-void *secp(void *ptr)
+void secp(void *ptr)
 {
     if (ptr == NULL) {
         fprintf(stderr, "SDL pooped itself: %s\n", SDL_GetError());
         abort();
     }
-
-    return ptr;
 }
 
 
@@ -69,20 +79,37 @@ SDL_Surface *load_png_file_as_surface()
                         0x00FF0000,
                         0xFF000000);
 
-    image_surface = secp(image_surface);
+    secp(image_surface);
 
     return image_surface;
 }
 
+
+
+
 SDL_Texture *load_png_file_as_texture(SDL_Renderer *renderer)
 {
     SDL_Surface *image_surface = load_png_file_as_surface();
-    return secp(SDL_CreateTextureFromSurface(renderer, image_surface));
+    
+    SDL_Texture *t = SDL_CreateTextureFromSurface(renderer, image_surface);
+
+    secp(t);
+
+    return t;
 }
 
-void render_digit_at(SDL_Renderer *renderer, SDL_Texture *digits, size_t digit_index,
-                     size_t wiggle_index, int *pen_x, int *pen_y, float user_scale, float fit_scale)
-{
+
+
+
+
+
+
+
+void render_digit_at(SDL_Renderer *renderer, 
+                     SDL_Texture *digits, 
+                     size_t digit_index,
+                     size_t wiggle_index, int *pen_x, int *pen_y, float user_scale, float fit_scale) {
+
     const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
     const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
 
@@ -121,11 +148,8 @@ void initial_pen(SDL_Window *window, int *pen_x, int *pen_y, float user_scale, f
     *pen_y = h / 2 - effective_digit_height / 2;
 }
 
-typedef enum {
-    MODE_ASCENDING = 0,
-    MODE_COUNTDOWN,
-    MODE_CLOCK,
-} Mode;
+
+
 
 float parse_time(const char *time)
 {
@@ -159,9 +183,9 @@ float parse_time(const char *time)
 
 #define TITLE_CAP 256
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     Mode mode = MODE_ASCENDING;
+
     float displayed_time = 0.0f;
     int paused = 0;
     int exit_after_countdown = 0;
@@ -180,20 +204,27 @@ int main(int argc, char **argv)
     }
 
     secc(SDL_Init(SDL_INIT_VIDEO));
+    
 
-    SDL_Window *window =
-        secp(SDL_CreateWindow(
+    // CREATE WINDOW
+    SDL_Window *window;
+    window = SDL_CreateWindow(
                  "sowon",
                  0, 0, TEXT_WIDTH, TEXT_HEIGHT,
-                 SDL_WINDOW_RESIZABLE));
+                 SDL_WINDOW_RESIZABLE);
 
-    SDL_Renderer *renderer =
-        secp(SDL_CreateRenderer(
-                 window, -1,
-                 SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED));
+    secp(window);
+
+    // CREATE RENDERER
+    SDL_Renderer *renderer;
+    renderer = SDL_CreateRenderer(window, -1,
+                 SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+
+    secp(renderer);
 
     secc(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"));
 
+    // CREATE TEXTURE
     SDL_Texture *digits = load_png_file_as_texture(renderer);
     secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
 
@@ -208,6 +239,7 @@ int main(int argc, char **argv)
     float wiggle_cooldown = WIGGLE_DURATION;
     float user_scale = 1.0f;
     char prev_title[TITLE_CAP];
+
     while (!quit) {
         // INPUT BEGIN //////////////////////////////
         SDL_Event event = {0};
