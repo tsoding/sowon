@@ -50,19 +50,27 @@ void *secp(void *ptr)
     return ptr;
 }
 
+
+
+
+
+
 SDL_Surface *load_png_file_as_surface()
 {
-    SDL_Surface* image_surface =
-        secp(SDL_CreateRGBSurfaceFrom(
-                 png,
-                 (int) png_width,
-                 (int) png_height,
-                 32,
-                 (int) png_width * 4,
-                 0x000000FF,
-                 0x0000FF00,
-                 0x00FF0000,
-                 0xFF000000));
+    SDL_Surface* image_surface;
+    image_surface =  SDL_CreateRGBSurfaceFrom(
+                        png,
+                        (int) png_width,
+                        (int) png_height,
+                        32,
+                        (int) png_width * 4,
+                        0x000000FF,
+                        0x0000FF00,
+                        0x00FF0000,
+                        0xFF000000);
+
+    image_surface = secp(image_surface);
+
     return image_surface;
 }
 
