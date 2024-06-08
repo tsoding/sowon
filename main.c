@@ -78,62 +78,6 @@ void secp(void *ptr)
 
 
 
-// width, height
-void initial_pen(SDL_Window *window,
-                 int *pen_x, int *pen_y, 
-                 float user_scale, float *fit_scale) {
-    
-    // window size
-    int w, h;
-    SDL_GetWindowSize(window, &w, &h);
-
-    // width/height ratio
-    float text_aspect_ratio = (float) TEXT_WIDTH / (float) TEXT_HEIGHT;
-    float window_aspect_ratio = (float) w / (float) h;
-
-    if(text_aspect_ratio > window_aspect_ratio) {
-        *fit_scale = (float) w / (float) TEXT_WIDTH;
-    } else {
-        *fit_scale = (float) h / (float) TEXT_HEIGHT;
-    }
-
-    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * *fit_scale);
-    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * *fit_scale);
-
-    *pen_x = w / 2 - effective_digit_width * CHARS_COUNT / 2;
-    *pen_y = h / 2 - effective_digit_height / 2;
-}
-
-
-
-
-void render_digit_at(SDL_Renderer *renderer, 
-                     SDL_Texture *digits, 
-                     size_t digit_index,
-                     size_t wiggle_index,
-                     int *pen_x, int *pen_y,
-                     float user_scale, float fit_scale) {
-
-    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
-    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
-
-    const SDL_Rect src_rect = {
-        (int) (digit_index * SPRITE_CHAR_WIDTH),
-        (int) (wiggle_index * SPRITE_CHAR_HEIGHT),
-        SPRITE_CHAR_WIDTH,
-        SPRITE_CHAR_HEIGHT
-    };
-
-    const SDL_Rect dst_rect = {
-        *pen_x,
-        *pen_y,
-        effective_digit_width,
-        effective_digit_height
-    };
-    SDL_RenderCopy(renderer, digits, &src_rect, &dst_rect);
-    *pen_x += effective_digit_width;
-}
-
 
 
 
@@ -195,8 +139,7 @@ void createRenderer(SDL_Window *window, SDL_Renderer **renderer) {
 
 
 
-SDL_Texture *createTextureFromFile(SDL_Renderer *renderer)
-{
+SDL_Texture *createTextureFromFile(SDL_Renderer *renderer) {
    SDL_Surface* image_surface;
     image_surface =  SDL_CreateRGBSurfaceFrom(
                         png,
@@ -315,33 +258,141 @@ void eventLoop(int *quit, Config *config, SDL_Window *window, SDL_Texture *digit
 }
 
 
+void windowSize(SDL_Window *window, int *w, int *h) {
+    SDL_GetWindowSize(window, w, h);
+}
+
+
+// width
+// height
+void initial_pen(int w, int h,
+                 int *pen_x,
+                 int *pen_y, 
+                 float user_scale,
+                 float *fit_scale) {
+    
+    
+
+    // width/height ratio
+    float text_aspect_ratio = (float) TEXT_WIDTH / (float) TEXT_HEIGHT;
+    float window_aspect_ratio = (float) w / (float) h;
+
+    if(text_aspect_ratio > window_aspect_ratio) {
+        *fit_scale = (float) w / (float) TEXT_WIDTH;
+    } else {
+        *fit_scale = (float) h / (float) TEXT_HEIGHT;
+    }
+
+    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * *fit_scale);
+    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * *fit_scale);
+
+    *pen_x = w / 2 - effective_digit_width * CHARS_COUNT / 2;
+    *pen_y = h / 2 - effective_digit_height / 2;
+}
+
+
+
+
+void render_digit_at(SDL_Renderer *renderer, 
+                     SDL_Texture *digits, 
+                     size_t digit_index,
+                     size_t wiggle_index,
+                     int *pen_x, int *pen_y,
+                     float user_scale, float fit_scale) {
+
+    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
+    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
+
+    const SDL_Rect src_rect = {
+        (int) (digit_index * SPRITE_CHAR_WIDTH),
+        (int) (wiggle_index * SPRITE_CHAR_HEIGHT),
+        SPRITE_CHAR_WIDTH,
+        SPRITE_CHAR_HEIGHT
+    };
+
+    const SDL_Rect dst_rect = {
+        *pen_x,
+        *pen_y,
+        effective_digit_width,
+        effective_digit_height
+    };
+    SDL_RenderCopy(renderer, digits, &src_rect, &dst_rect);
+    *pen_x += effective_digit_width;
+}
+
+
 // RENDERING 
 void createRendering(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *digits, Config config) {
 
         SDL_SetRenderDrawColor(renderer, BACKGROUND_COLOR_R, BACKGROUND_COLOR_G, BACKGROUND_COLOR_B, 255);
+
         SDL_RenderClear(renderer);
+
+
+        // window size
+        int w;
+        int h;
+        windowSize(window, &w, &h);
         
-        int pen_x, pen_y;
+        int pen_x;
+        int pen_y;
+
         float fit_scale = 1.0;
-        initial_pen(window, &pen_x, &pen_y, config.user_scale, &fit_scale);
+        initial_pen(w, h,
+                    &pen_x, &pen_y, 
+                    config.user_scale,
+                    &fit_scale);
 
         const size_t t = (size_t) ceilf(fmaxf(config.displayed_time, 0.0f));
 
         // TODO: support amount of hours >99
-        const size_t hours = t / 60 / 60;
-        render_digit_at(renderer, digits, hours / 10,   config.wiggle_index      % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
-        render_digit_at(renderer, digits, hours % 10,  (config.wiggle_index + 1) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
-        render_digit_at(renderer, digits, COLON_INDEX,  config.wiggle_index      % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
 
-        const size_t minutes = t / 60 % 60;
-        render_digit_at(renderer, digits, minutes / 10, (config.wiggle_index + 2) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
-        render_digit_at(renderer, digits, minutes % 10, (config.wiggle_index + 3) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
-        render_digit_at(renderer, digits, COLON_INDEX,  (config.wiggle_index + 1) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
+        /*  hours   */
+        const size_t hours = t/60/60;
+        render_digit_at(renderer, 
+                        digits, 
+                        hours/10,
+                        config.wiggle_index%WIGGLE_COUNT,
+                        &pen_x, &pen_y,
+                        config.user_scale,
+                        fit_scale);
 
+        render_digit_at(renderer,
+                        digits, 
+                        hours%10,
+                        (config.wiggle_index + 1)%WIGGLE_COUNT,
+                        &pen_x, &pen_y,
+                        config.user_scale, 
+                        fit_scale);
+
+        render_digit_at(renderer,
+                        digits,
+                        COLON_INDEX,
+                        config.wiggle_index%WIGGLE_COUNT,
+                        &pen_x, &pen_y, 
+                        config.user_scale, 
+                        fit_scale);
+        
+        /*  minutes */
+        const size_t minutes = t/60%60;
+        render_digit_at(renderer, digits, minutes/10, (config.wiggle_index+2)%WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
+        render_digit_at(renderer, digits, minutes%10, (config.wiggle_index+3)%WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
+
+        render_digit_at(renderer, 
+                        digits,
+                        COLON_INDEX,  
+                        (config.wiggle_index+1)%WIGGLE_COUNT, 
+                        &pen_x, &pen_y, 
+                        config.user_scale, 
+                        fit_scale);
+        
+        /*  seconds */
         const size_t seconds = t % 60;
-        render_digit_at(renderer, digits, seconds / 10, (config.wiggle_index + 4) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
-        render_digit_at(renderer, digits, seconds % 10, (config.wiggle_index + 5) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
+        render_digit_at(renderer, digits, seconds/10, (config.wiggle_index+4) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
+        render_digit_at(renderer, digits, seconds%10, (config.wiggle_index+5) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
 
+
+        /*  print time as window's title */
         char title[TITLE_CAP];
         snprintf(title, sizeof(title), "%02zu:%02zu:%02zu - sowon", hours, minutes, seconds);
 
