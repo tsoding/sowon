@@ -43,6 +43,7 @@ typedef enum {
 typedef struct Config {
     Mode mode;
     float displayed_time;
+    float displayed_time_initial;
     int paused;
     int exit_after_countdown;
     size_t wiggle_index;
@@ -259,7 +260,7 @@ int main(int argc, char **argv) {
 
 
     // configuration 
-    Config config = {MODE_ASCENDING,  0.0f, 0, 0, 0, WIGGLE_DURATION, 1.0f, "hello world",0};
+    Config config = {MODE_ASCENDING, 0.0f, 0.0f, 0, 0, 0, WIGGLE_DURATION, 1.0f, "hello world",0};
 
 
     for (int i = 1; i < argc; ++i) {
@@ -276,6 +277,7 @@ int main(int argc, char **argv) {
         else {
             config.mode = MODE_COUNTDOWN;
             config.displayed_time = parse_time(argv[i]);
+            config.displayed_time_initial = config.displayed_time;
         }
     }
 
@@ -304,24 +306,29 @@ int main(int argc, char **argv) {
                     switch (event.key.keysym.sym) {
                         case SDLK_SPACE: {
                             config.paused = !config.paused;
-                        } break;
+                        } 
+                        break;
 
                         case SDLK_KP_PLUS:
 
                         case SDLK_EQUALS: {
                             config.user_scale += SCALE_FACTOR * config.user_scale;
-                        } break;
+                        } 
+                        break;
 
                         case SDLK_KP_MINUS:
+
                         case SDLK_MINUS: {
                             config.user_scale -= SCALE_FACTOR * config.user_scale;
-                        } break;
+                        } 
+                        break;
 
                         case SDLK_KP_0:
 
                         case SDLK_0: {
                             config.user_scale = 1.0f;
-                        } break;
+                        } 
+                        break;
 
                         case SDLK_F5: {
                             config.displayed_time = 0.0f;
@@ -331,22 +338,22 @@ int main(int argc, char **argv) {
                                 config.paused = 1;
                             }
                             else {
-                                for (int i = 1; i < argc; ++i) {
-                                    config.displayed_time = parse_time(argv[i]);
-                                }
+                                config.displayed_time = config.displayed_time_initial;
                             }
-
 
                             if (config.paused) {
                                 secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
-                            } else {
+                            }
+                            else {
                                 secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
                             }
-                        } break;
+                        } 
+                        break;
 
                         case SDLK_F11: {
                             fullScreenToggle(window);
-                        } break;
+                        } 
+                        break;
                     }
                 } break;
 
