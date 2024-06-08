@@ -14,3 +14,7 @@
                         //         config.displayed_time = parse_time(argv[i]);
                         //     }
                         // }
+
+4) not used
+                        char prev_title[TITLE_CAP];
+                        char title[TITLE_CAP];

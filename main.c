@@ -233,9 +233,8 @@ void fullScreenToggle(SDL_Window *window) {
 
 
 
+// EVEN LOOP
 void eventLoop(int *quit, Config *config, SDL_Window *window, SDL_Texture *digits) {
-        // EVEN LOOP
-        // input begin //////////////////////////////
         SDL_Event event = {0};
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
@@ -316,8 +315,45 @@ void eventLoop(int *quit, Config *config, SDL_Window *window, SDL_Texture *digit
 }
 
 
+// RENDERING 
+void createRendering(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *digits, Config config) {
+
+        SDL_SetRenderDrawColor(renderer, BACKGROUND_COLOR_R, BACKGROUND_COLOR_G, BACKGROUND_COLOR_B, 255);
+        SDL_RenderClear(renderer);
+        
+        int pen_x, pen_y;
+        float fit_scale = 1.0;
+        initial_pen(window, &pen_x, &pen_y, config.user_scale, &fit_scale);
+
+        const size_t t = (size_t) ceilf(fmaxf(config.displayed_time, 0.0f));
+
+        // TODO: support amount of hours >99
+        const size_t hours = t / 60 / 60;
+        render_digit_at(renderer, digits, hours / 10,   config.wiggle_index      % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
+        render_digit_at(renderer, digits, hours % 10,  (config.wiggle_index + 1) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
+        render_digit_at(renderer, digits, COLON_INDEX,  config.wiggle_index      % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
+
+        const size_t minutes = t / 60 % 60;
+        render_digit_at(renderer, digits, minutes / 10, (config.wiggle_index + 2) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
+        render_digit_at(renderer, digits, minutes % 10, (config.wiggle_index + 3) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
+        render_digit_at(renderer, digits, COLON_INDEX,  (config.wiggle_index + 1) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
+
+        const size_t seconds = t % 60;
+        render_digit_at(renderer, digits, seconds / 10, (config.wiggle_index + 4) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
+        render_digit_at(renderer, digits, seconds % 10, (config.wiggle_index + 5) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
+
+        char title[TITLE_CAP];
+        snprintf(title, sizeof(title), "%02zu:%02zu:%02zu - sowon", hours, minutes, seconds);
+
+        if (strcmp(config.prev_title, title) != 0) {
+            SDL_SetWindowTitle(window, title);
+        }
+
+        memcpy(title, config.prev_title, TITLE_CAP);
 
 
+        SDL_RenderPresent(renderer);
+}
 
 
 
@@ -335,7 +371,6 @@ int main(int argc, char **argv) {
     SDL_Window *window;
     createWindow(&window);
 
-    
 
     // CREATE RENDERER
     SDL_Renderer *renderer;
@@ -380,74 +415,46 @@ int main(int argc, char **argv) {
         
         eventLoop(&quit, &config, window, digits);
 
+        createRendering(window, renderer, digits, config);
 
-        // INPUT END //////////////////////////////
 
-        // RENDER BEGIN //////////////////////////////
-        SDL_SetRenderDrawColor(renderer, BACKGROUND_COLOR_R, BACKGROUND_COLOR_G, BACKGROUND_COLOR_B, 255);
-        SDL_RenderClear(renderer);
-        {
-            int pen_x, pen_y;
-            float fit_scale = 1.0;
-            initial_pen(window, &pen_x, &pen_y, config.user_scale, &fit_scale);
-
-            const size_t t = (size_t) ceilf(fmaxf(config.displayed_time, 0.0f));
-
-            // TODO: support amount of hours >99
-            const size_t hours = t / 60 / 60;
-            render_digit_at(renderer, digits, hours / 10,   config.wiggle_index      % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
-            render_digit_at(renderer, digits, hours % 10,  (config.wiggle_index + 1) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
-            render_digit_at(renderer, digits, COLON_INDEX,  config.wiggle_index      % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
-
-            const size_t minutes = t / 60 % 60;
-            render_digit_at(renderer, digits, minutes / 10, (config.wiggle_index + 2) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
-            render_digit_at(renderer, digits, minutes % 10, (config.wiggle_index + 3) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
-            render_digit_at(renderer, digits, COLON_INDEX,  (config.wiggle_index + 1) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
-
-            const size_t seconds = t % 60;
-            render_digit_at(renderer, digits, seconds / 10, (config.wiggle_index + 4) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
-            render_digit_at(renderer, digits, seconds % 10, (config.wiggle_index + 5) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
-
-            char title[TITLE_CAP];
-            snprintf(title, sizeof(title), "%02zu:%02zu:%02zu - sowon", hours, minutes, seconds);
-            if (strcmp(config.prev_title, title) != 0) {
-                SDL_SetWindowTitle(window, title);
-            }
-            memcpy(title, config.prev_title, TITLE_CAP);
-        }
-        SDL_RenderPresent(renderer);
-        // RENDER END //////////////////////////////
 
         // UPDATE BEGIN //////////////////////////////
         if (config.wiggle_cooldown <= 0.0f) {
             config.wiggle_index++;
             config.wiggle_cooldown = WIGGLE_DURATION;
         }
+
         config.wiggle_cooldown -= DELTA_TIME;
 
         if (!config.paused) {
             switch (config.mode) {
-            case MODE_ASCENDING: {
-                config.displayed_time += DELTA_TIME;
-            } break;
-            case MODE_COUNTDOWN: {
-                if (config.displayed_time > 1e-6) {
-                    config.displayed_time -= DELTA_TIME;
-                } else {
-                    config.displayed_time = 0.0f;
-                    if (config.exit_after_countdown) {
-                        SDL_Quit();
-                        return 0;
+                case MODE_ASCENDING: {
+                    config.displayed_time += DELTA_TIME;
+                } 
+                break;
+                case MODE_COUNTDOWN: {
+                    if (config.displayed_time > 1e-6) {
+                        config.displayed_time -= DELTA_TIME;
+                    } 
+                    else {
+                        config.displayed_time = 0.0f;
+                        if (config.exit_after_countdown) {
+                            SDL_Quit();
+                            return 0;
+                        }
                     }
-                }
-            } break;
-            case MODE_CLOCK: {
-                time_t t = time(NULL);
-                struct tm *tm = localtime(&t);
-                config.displayed_time = tm->tm_sec
-                               + tm->tm_min  * 60.0f
-                               + tm->tm_hour * 60.0f * 60.0f;
-            } break;
+                } 
+                break;
+
+                case MODE_CLOCK: {
+                    time_t t = time(NULL);
+                    struct tm *tm = localtime(&t);
+                    config.displayed_time = tm->tm_sec
+                                   + tm->tm_min  * 60.0f
+                                   + tm->tm_hour * 60.0f * 60.0f;
+                } 
+                break;
             }
         }
         // UPDATE END //////////////////////////////
