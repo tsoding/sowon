@@ -217,6 +217,24 @@ SDL_Texture *createTextureFromFile(SDL_Renderer *renderer)
     return digits;
 }
 
+
+void fullScreenToggle(SDL_Window *window) {
+    Uint32 window_flags;
+    secc(window_flags = SDL_GetWindowFlags(window));
+
+    if(window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+        secc(SDL_SetWindowFullscreen(window, 0));
+    } 
+    else {
+        secc(SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP));
+    }
+}
+
+
+
+/*  MAIN    */
+
+
 int main(int argc, char **argv) {
     secc(SDL_Init(SDL_INIT_VIDEO));
     secc(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"));
@@ -284,55 +302,51 @@ int main(int argc, char **argv) {
 
                 case SDL_KEYDOWN: {
                     switch (event.key.keysym.sym) {
-                    case SDLK_SPACE: {
-                        config.paused = !config.paused;
-                    } break;
+                        case SDLK_SPACE: {
+                            config.paused = !config.paused;
+                        } break;
 
-                    case SDLK_KP_PLUS:
-                    case SDLK_EQUALS: {
-                        config.user_scale += SCALE_FACTOR * config.user_scale;
-                    } break;
+                        case SDLK_KP_PLUS:
 
-                    case SDLK_KP_MINUS:
-                    case SDLK_MINUS: {
-                        config.user_scale -= SCALE_FACTOR * config.user_scale;
-                    } break;
+                        case SDLK_EQUALS: {
+                            config.user_scale += SCALE_FACTOR * config.user_scale;
+                        } break;
 
-                    case SDLK_KP_0:
-                    case SDLK_0: {
-                        config.user_scale = 1.0f;
-                    } break;
+                        case SDLK_KP_MINUS:
+                        case SDLK_MINUS: {
+                            config.user_scale -= SCALE_FACTOR * config.user_scale;
+                        } break;
 
-                    case SDLK_F5: {
-                        config.displayed_time = 0.0f;
-                        config.paused = 0;
-                        
-                        if (config.p_flag) {
-                            config.paused = 1;
-                        }
-                        else {
-                            for (int i = 1; i < argc; ++i) {
-                                config.displayed_time = parse_time(argv[i]);
+                        case SDLK_KP_0:
+
+                        case SDLK_0: {
+                            config.user_scale = 1.0f;
+                        } break;
+
+                        case SDLK_F5: {
+                            config.displayed_time = 0.0f;
+                            config.paused = 0;
+                            
+                            if (config.p_flag) {
+                                config.paused = 1;
                             }
-                        }
+                            else {
+                                for (int i = 1; i < argc; ++i) {
+                                    config.displayed_time = parse_time(argv[i]);
+                                }
+                            }
 
 
-                        if (config.paused) {
-                            secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
-                        } else {
-                            secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
-                        }
-                    } break;
+                            if (config.paused) {
+                                secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
+                            } else {
+                                secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
+                            }
+                        } break;
 
-                    case SDLK_F11: {
-                        Uint32 window_flags;
-                        secc(window_flags = SDL_GetWindowFlags(window));
-                        if(window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
-                            secc(SDL_SetWindowFullscreen(window, 0));
-                        } else {
-                            secc(SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP));
-                        }
-                    } break;
+                        case SDLK_F11: {
+                            fullScreenToggle(window);
+                        } break;
                     }
                 } break;
 
