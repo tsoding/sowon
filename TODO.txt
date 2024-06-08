@@ -1,2 +1,16 @@
-in pause but time to zero, instead of current time
-$ sowon -p clock
+1)   in pause but time to zero, instead of current time
+     $ sowon -p clock
+
+2)   not to parse again main arguments in event loop when F5 is pressed
+
+3)   function unecessarally execute in each iteration
+
+                        displayed_time = parse_time(argv[i]) 
+
+                        // for (int i = 1; i < argc; ++i) {
+                        //     if (strcmp(argv[i], "-p") == 0) {
+                        //         config.paused = 1;
+                        //     } else {
+                        //         config.displayed_time = parse_time(argv[i]);
+                        //     }
+                        // }

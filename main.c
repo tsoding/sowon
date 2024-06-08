@@ -49,6 +49,7 @@ typedef struct Config {
     float wiggle_cooldown;
     float user_scale;
     char prev_title[TITLE_CAP];
+    int p_flag;
 } Config;
 
 
@@ -240,36 +241,29 @@ int main(int argc, char **argv) {
 
 
     // configuration 
-    Config config = {MODE_ASCENDING,  0.0f, 0, 0, 0, WIGGLE_DURATION, 1.0f, "hello world"};
-
-    
-    // initial configuration
-    // Mode mode = MODE_ASCENDING;
-    // float displayed_time = 0.0f;
-    // int paused = 0;
-    // int exit_after_countdown = 0;
-    // 
-    // size_t wiggle_index = 0;
-    // float wiggle_cooldown = WIGGLE_DURATION;
-    // float user_scale = 1.0f;
-    // char prev_title[TITLE_CAP];
+    Config config = {MODE_ASCENDING,  0.0f, 0, 0, 0, WIGGLE_DURATION, 1.0f, "hello world",0};
 
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-p") == 0) {
+            config.p_flag = 1;
             config.paused = 1;
-        } else if (strcmp(argv[i], "-e") == 0) {
+        } 
+        else if (strcmp(argv[i], "-e") == 0) {
             config.exit_after_countdown = 1;
-        } else if (strcmp(argv[i], "clock") == 0) {
+        } 
+        else if (strcmp(argv[i], "clock") == 0) {
             config.mode = MODE_CLOCK;
-        } else {
+        } 
+        else {
             config.mode = MODE_COUNTDOWN;
             config.displayed_time = parse_time(argv[i]);
         }
     }
 
 
-
+    
+    // infinite loop
     int quit = 0;
     while (!quit) {
 
@@ -278,7 +272,8 @@ int main(int argc, char **argv) {
         } else {
             secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
         }
-
+        
+        // even loop
         // INPUT BEGIN //////////////////////////////
         SDL_Event event = {0};
         while (SDL_PollEvent(&event)) {
@@ -311,13 +306,17 @@ int main(int argc, char **argv) {
                     case SDLK_F5: {
                         config.displayed_time = 0.0f;
                         config.paused = 0;
-                        for (int i = 1; i < argc; ++i) {
-                            if (strcmp(argv[i], "-p") == 0) {
-                                config.paused = 1;
-                            } else {
+                        
+                        if (config.p_flag) {
+                            config.paused = 1;
+                        }
+                        else {
+                            for (int i = 1; i < argc; ++i) {
                                 config.displayed_time = parse_time(argv[i]);
                             }
                         }
+
+
                         if (config.paused) {
                             secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
                         } else {
