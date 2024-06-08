@@ -233,6 +233,97 @@ void fullScreenToggle(SDL_Window *window) {
 
 
 
+void eventLoop(int *quit, Config *config, SDL_Window *window, SDL_Texture *digits) {
+        // EVEN LOOP
+        // input begin //////////////////////////////
+        SDL_Event event = {0};
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_QUIT: {
+                    *quit = 1;
+                } 
+                break;
+
+                case SDL_KEYDOWN: {
+                    switch (event.key.keysym.sym) {
+                        case SDLK_SPACE: {
+                            config->paused = !config->paused;
+                        } 
+                        break;
+
+                        case SDLK_KP_PLUS:
+
+                        case SDLK_EQUALS: {
+                            config->user_scale += SCALE_FACTOR * config->user_scale;
+                        } 
+                        break;
+
+                        case SDLK_KP_MINUS:
+
+                        case SDLK_MINUS: {
+                            config->user_scale -= SCALE_FACTOR * config->user_scale;
+                        } 
+                        break;
+
+                        case SDLK_KP_0:
+
+                        case SDLK_0: {
+                            config->user_scale = 1.0f;
+                        } 
+                        break;
+
+                        case SDLK_F5: {
+                            config->displayed_time = 0.0f;
+                            config->paused = 0;
+                            
+                            if (config->p_flag) {
+                                config->paused = 1;
+                            }
+                            else {
+                                config->displayed_time = config->displayed_time_initial;
+                            }
+
+                            if (config->paused) {
+                                secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
+                            }
+                            else {
+                                secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
+                            }
+                        } 
+                        break;
+
+                        case SDLK_F11: {
+                            fullScreenToggle(window);
+                        } 
+                        break;
+                    }
+                } break;
+
+                case SDL_MOUSEWHEEL: {
+                    if (SDL_GetModState() & KMOD_CTRL) {
+                        if (event.wheel.y > 0) {
+                            config->user_scale += SCALE_FACTOR * config->user_scale;
+                        } else if (event.wheel.y < 0) {
+                            config->user_scale -= SCALE_FACTOR * config->user_scale;
+                        }
+                    }
+                } break;
+
+                default: {}
+            }
+        }
+
+}
+
+
+
+
+
+
+
+
+
+
 /*  MAIN    */
 
 
@@ -252,11 +343,6 @@ int main(int argc, char **argv) {
 
     // CREATE DIGITS TEXTURE
     SDL_Texture *digits = createTextureFromFile(renderer);
-
-
-   
-
-
 
 
     // configuration 
@@ -281,9 +367,8 @@ int main(int argc, char **argv) {
         }
     }
 
-
     
-    // infinite loop
+    // INFINITE LOOP
     int quit = 0;
     while (!quit) {
 
@@ -293,83 +378,8 @@ int main(int argc, char **argv) {
             secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
         }
         
-        // even loop
-        // INPUT BEGIN //////////////////////////////
-        SDL_Event event = {0};
-        while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-                case SDL_QUIT: {
-                    quit = 1;
-                } break;
+        eventLoop(&quit, &config, window, digits);
 
-                case SDL_KEYDOWN: {
-                    switch (event.key.keysym.sym) {
-                        case SDLK_SPACE: {
-                            config.paused = !config.paused;
-                        } 
-                        break;
-
-                        case SDLK_KP_PLUS:
-
-                        case SDLK_EQUALS: {
-                            config.user_scale += SCALE_FACTOR * config.user_scale;
-                        } 
-                        break;
-
-                        case SDLK_KP_MINUS:
-
-                        case SDLK_MINUS: {
-                            config.user_scale -= SCALE_FACTOR * config.user_scale;
-                        } 
-                        break;
-
-                        case SDLK_KP_0:
-
-                        case SDLK_0: {
-                            config.user_scale = 1.0f;
-                        } 
-                        break;
-
-                        case SDLK_F5: {
-                            config.displayed_time = 0.0f;
-                            config.paused = 0;
-                            
-                            if (config.p_flag) {
-                                config.paused = 1;
-                            }
-                            else {
-                                config.displayed_time = config.displayed_time_initial;
-                            }
-
-                            if (config.paused) {
-                                secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
-                            }
-                            else {
-                                secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
-                            }
-                        } 
-                        break;
-
-                        case SDLK_F11: {
-                            fullScreenToggle(window);
-                        } 
-                        break;
-                    }
-                } break;
-
-                case SDL_MOUSEWHEEL: {
-                    if (SDL_GetModState() & KMOD_CTRL) {
-                        if (event.wheel.y > 0) {
-                            config.user_scale += SCALE_FACTOR * config.user_scale;
-                        } else if (event.wheel.y < 0) {
-                            config.user_scale -= SCALE_FACTOR * config.user_scale;
-                        }
-                    }
-                } break;
-
-                default: {}
-            }
-        }
 
         // INPUT END //////////////////////////////
 
