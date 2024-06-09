@@ -9,30 +9,46 @@
 
 #include "./digits.h"
 
+#define TITLE_CAP 256
+#define SCALE_FACTOR 0.15f
 #define FPS 60
 #define DELTA_TIME (1.0f / FPS)
+
+/*  sprite  */
 #define SPRITE_CHAR_WIDTH (300 / 2)
 #define SPRITE_CHAR_HEIGHT (380 / 2)
+
+/*  char    */
 #define CHAR_WIDTH (300 / 2)
 #define CHAR_HEIGHT (380 / 2)
 #define CHARS_COUNT 8
+
+/*  text    */
 #define TEXT_WIDTH (CHAR_WIDTH * CHARS_COUNT)
 #define TEXT_HEIGHT (CHAR_HEIGHT)
+
 #define WIGGLE_COUNT 3
 #define WIGGLE_DURATION (0.40f / WIGGLE_COUNT)
+
 #define COLON_INDEX 10
+
+
+/*  color   */
 #define MAIN_COLOR_R 220
 #define MAIN_COLOR_G 220
 #define MAIN_COLOR_B 220
+
 #define PAUSE_COLOR_R 220
 #define PAUSE_COLOR_G 120
 #define PAUSE_COLOR_B 120
+
 #define BACKGROUND_COLOR_R 24
 #define BACKGROUND_COLOR_G 24
 #define BACKGROUND_COLOR_B 24
-#define SCALE_FACTOR 0.15f
 
-#define TITLE_CAP 256
+
+
+
 
 typedef enum {
     MODE_ASCENDING = 0,
@@ -191,40 +207,6 @@ void windowSize(SDL_Window *window, int *w, int *h) {
 }
 
 
-/*  pre:    window
-                width w
-                height h
-    post:   digit image size to be render render
-            width pen_w
-            height pen_h
-*/
-void initial_pen(int w, int h,
-                 int *pen_x,
-                 int *pen_y, 
-                 float user_scale,
-                 float *fit_scale) {
-    
-    
-
-    // width/height ratio
-    float text_aspect_ratio = (float) TEXT_WIDTH / (float) TEXT_HEIGHT;
-    float window_aspect_ratio = (float) w / (float) h;
-
-    if(text_aspect_ratio > window_aspect_ratio) {
-        *fit_scale = (float) w / (float) TEXT_WIDTH;
-    } else {
-        *fit_scale = (float) h / (float) TEXT_HEIGHT;
-    }
-
-    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * *fit_scale);
-    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * *fit_scale);
-
-    *pen_x = w/2 - effective_digit_width*CHARS_COUNT/2;
-    *pen_y = h/2 - effective_digit_height/2;
-}
-
-
-
 /*  choosing subimage from and image    */
 void render_digit_at(SDL_Renderer *renderer, 
                      SDL_Texture *digits, 
@@ -254,6 +236,41 @@ void render_digit_at(SDL_Renderer *renderer,
 }
 
 
+void fitScale(int w, int h, float *fit_scale) {
+    // width/height ratio
+    float text_aspect_ratio = (float) TEXT_WIDTH / (float) TEXT_HEIGHT;
+    float window_aspect_ratio = (float) w / (float) h;
+
+    if(text_aspect_ratio > window_aspect_ratio) {
+        *fit_scale = (float) w / (float) TEXT_WIDTH;
+    } else {
+        *fit_scale = (float) h / (float) TEXT_HEIGHT;
+    }
+}
+
+
+/*  pre:    window width w
+            window height h
+    post:   digit image size to be render render
+            width pen_w
+            height pen_h
+*/
+void initial_pen(int w, int h,
+                 int *pen_x,
+                 int *pen_y, 
+                 float user_scale,
+                 float fit_scale) {
+    
+    
+    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
+    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
+
+    *pen_x = w/2 - effective_digit_width*CHARS_COUNT/2;
+    *pen_y = h/2 - effective_digit_height/2;
+}
+
+
+
 void createRendering(SDL_Window *window, 
                      SDL_Renderer *renderer, 
                      SDL_Texture *digits, 
@@ -269,14 +286,15 @@ void createRendering(SDL_Window *window,
         int h;
         windowSize(window, &w, &h);
         
+        float fit_scale = 1.0;
+        fitScale(w, h, &fit_scale);
+
         int pen_x;
         int pen_y;
-        float fit_scale = 1.0;
-
         initial_pen(w, h,
                     &pen_x, &pen_y, 
                     config.user_scale,
-                    &fit_scale);
+                    fit_scale);
 
         const size_t t = (size_t) ceilf(fmaxf(config.displayed_time, 0.0f));
 
@@ -342,6 +360,11 @@ void createRendering(SDL_Window *window,
 }
 
 
+
+
+
+/*  CONFIG  */
+
 void pauseToggle(Config *config) {
     config->paused = !config->paused;
 }
@@ -389,8 +412,11 @@ void mouseWheel(SDL_Event event, Config *config) {
     }
 }
 
-void keyDownCases(SDL_Event event, Config *config, SDL_Texture *digits, SDL_Window *window) {
 
+/*  EVENT KEY DOWN  */
+
+void keyDownCases(SDL_Event event, Config *config, SDL_Texture *digits, SDL_Window *window) {
+                    // https://www.libsdl.org/release/SDL-1.2.15/docs/html/sdlkey.html
                     switch (event.key.keysym.sym) {
                         case SDLK_SPACE: {
                             pauseToggle(config);
@@ -400,7 +426,7 @@ void keyDownCases(SDL_Event event, Config *config, SDL_Texture *digits, SDL_Wind
                         case SDLK_KP_PLUS:
 
                         case SDLK_EQUALS: {
-                            zoomIn(config);
+                            zoomInitial(config);
                         } 
                         break;
 
@@ -412,9 +438,14 @@ void keyDownCases(SDL_Event event, Config *config, SDL_Texture *digits, SDL_Wind
                         break;
 
                         case SDLK_KP_0:
-
+                        
+                        // in a spanish keyboard, 'equals key' is <shift+0> for zoom in
                         case SDLK_0: {
-                            zoomInitial(config);
+                            if (event.key.keysym.mod & KMOD_SHIFT) {
+                                zoomIn(config);
+                            }
+                            else 
+                                zoomInitial(config);
                         } 
                         break;
 
