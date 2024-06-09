@@ -342,66 +342,84 @@ void createRendering(SDL_Window *window,
 }
 
 
+void pauseToggle(Config *config) {
+    config->paused = !config->paused;
+}
+
+void zoomIn(Config *config) {
+    config->user_scale += SCALE_FACTOR*config->user_scale;
+}
+
+void zoomOut(Config *config) {
+    config->user_scale -= SCALE_FACTOR*config->user_scale;
+}
+
+void zoomInitial(Config *config) {
+    config->user_scale = 1.0f;
+}
+
+void resetClock(Config *config, SDL_Texture *digits) {
+
+        config->displayed_time = 0.0f;
+        config->paused = 0;
+        
+        if (config->p_flag) {
+            config->paused = 1;
+        }
+        else {
+            config->displayed_time = config->displayed_time_initial;
+        }
+
+        if (config->paused) {
+            secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
+        }
+        else {
+            secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
+        }
+}
 
 
+void mouseWheel(SDL_Event event, Config *config) {
+    if (SDL_GetModState() & KMOD_CTRL) {
+        if (event.wheel.y > 0) {
+            config->user_scale += SCALE_FACTOR * config->user_scale;
+        } else if (event.wheel.y < 0) {
+            config->user_scale -= SCALE_FACTOR * config->user_scale;
+        }
+    }
+}
 
+void keyDownCases(SDL_Event event, Config *config, SDL_Texture *digits, SDL_Window *window) {
 
-
-/* EVEN LOOP    */
-void eventLoop(int *quit, Config *config, SDL_Window *window, SDL_Texture *digits) {
-        SDL_Event event = {0};
-        while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-                case SDL_QUIT: {
-                    *quit = 1;
-                } 
-                break;
-
-                case SDL_KEYDOWN: {
                     switch (event.key.keysym.sym) {
                         case SDLK_SPACE: {
-                            config->paused = !config->paused;
+                            pauseToggle(config);
                         } 
                         break;
 
                         case SDLK_KP_PLUS:
 
                         case SDLK_EQUALS: {
-                            config->user_scale += SCALE_FACTOR * config->user_scale;
+                            zoomIn(config);
                         } 
                         break;
 
                         case SDLK_KP_MINUS:
 
                         case SDLK_MINUS: {
-                            config->user_scale -= SCALE_FACTOR * config->user_scale;
+                            zoomOut(config);
                         } 
                         break;
 
                         case SDLK_KP_0:
 
                         case SDLK_0: {
-                            config->user_scale = 1.0f;
+                            zoomInitial(config);
                         } 
                         break;
 
                         case SDLK_F5: {
-                            config->displayed_time = 0.0f;
-                            config->paused = 0;
-                            
-                            if (config->p_flag) {
-                                config->paused = 1;
-                            }
-                            else {
-                                config->displayed_time = config->displayed_time_initial;
-                            }
-
-                            if (config->paused) {
-                                secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
-                            }
-                            else {
-                                secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
-                            }
+                            resetClock(config, digits);
                         } 
                         break;
 
@@ -410,19 +428,27 @@ void eventLoop(int *quit, Config *config, SDL_Window *window, SDL_Texture *digit
                         } 
                         break;
                     }
+}
+
+/* EVEN LOOP    */
+void eventLoop(int *quit, Config *config, SDL_Window *window, SDL_Texture *digits) {
+        SDL_Event event = {0};
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_QUIT: {
+                    *quit = 1;
+                } break;
+
+                case SDL_KEYDOWN: {
+                    keyDownCases(event, config, digits, window);
                 } break;
 
                 case SDL_MOUSEWHEEL: {
-                    if (SDL_GetModState() & KMOD_CTRL) {
-                        if (event.wheel.y > 0) {
-                            config->user_scale += SCALE_FACTOR * config->user_scale;
-                        } else if (event.wheel.y < 0) {
-                            config->user_scale -= SCALE_FACTOR * config->user_scale;
-                        }
-                    }
+                    mouseWheel(event, config);
                 } break;
 
-                default: {}
+                default: {
+                }
             }
         }
 

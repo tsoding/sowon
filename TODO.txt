@@ -21,3 +21,7 @@
 
 5) document in README.md the make option
                         $ make install
+
+
+6) zoom in when pressing = happens abruptly to maximum size
+   also when pressing 0
