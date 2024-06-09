@@ -236,6 +236,9 @@ void render_digit_at(SDL_Renderer *renderer,
 }
 
 
+/*  pre:
+    post: window resize adjusted
+*/
 void fitScale(int w, int h, float *fit_scale) {
     // width/height ratio
     float text_aspect_ratio = (float) TEXT_WIDTH / (float) TEXT_HEIGHT;
@@ -274,27 +277,13 @@ void initial_pen(int w, int h,
 void createRendering(SDL_Window *window, 
                      SDL_Renderer *renderer, 
                      SDL_Texture *digits, 
-                     Config config) {
+                     Config config, float fit_scale, int pen_x, int pen_y) {
 
         SDL_SetRenderDrawColor(renderer, BACKGROUND_COLOR_R, BACKGROUND_COLOR_G, BACKGROUND_COLOR_B, 255);
 
         SDL_RenderClear(renderer);
 
 
-        // window size
-        int w;
-        int h;
-        windowSize(window, &w, &h);
-        
-        float fit_scale = 1.0;
-        fitScale(w, h, &fit_scale);
-
-        int pen_x;
-        int pen_y;
-        initial_pen(w, h,
-                    &pen_x, &pen_y, 
-                    config.user_scale,
-                    fit_scale);
 
         const size_t t = (size_t) ceilf(fmaxf(config.displayed_time, 0.0f));
 
@@ -363,12 +352,23 @@ void createRendering(SDL_Window *window,
 
 
 
-/*  CONFIG  */
+/*  CONFIGURATION STATE  */
+
+/*  paused  */
 
 void pauseToggle(Config *config) {
     config->paused = !config->paused;
 }
 
+/*  zoom   */
+
+void zoomInitial(Config *config) {
+    config->user_scale = 1.0f;
+}
+
+/* pre:
+   post: zoom in, represente in 'user_scale'
+*/
 void zoomIn(Config *config) {
     config->user_scale += SCALE_FACTOR*config->user_scale;
 }
@@ -377,9 +377,8 @@ void zoomOut(Config *config) {
     config->user_scale -= SCALE_FACTOR*config->user_scale;
 }
 
-void zoomInitial(Config *config) {
-    config->user_scale = 1.0f;
-}
+
+/*  reset clock  */
 
 void resetClock(Config *config, SDL_Texture *digits) {
 
@@ -402,6 +401,60 @@ void resetClock(Config *config, SDL_Texture *digits) {
 }
 
 
+
+
+/*  EVENTS  */
+
+/*  event key down  */
+
+void keyDownCases(SDL_Event event, Config *config, SDL_Texture *digits, SDL_Window *window) {
+    // https://www.libsdl.org/release/SDL-1.2.15/docs/html/sdlkey.html
+    switch (event.key.keysym.sym) {
+        case SDLK_SPACE: {
+            pauseToggle(config);
+        } 
+        break;
+
+        case SDLK_KP_PLUS:
+
+        case SDLK_EQUALS: {
+            zoomInitial(config);
+        } 
+        break;
+
+        case SDLK_KP_MINUS:
+
+        case SDLK_MINUS: {
+            zoomOut(config);
+        } 
+        break;
+
+        case SDLK_KP_0:
+        
+        // in a spanish keyboard, 'equals key' is <shift+0> for zoom in
+        case SDLK_0: {
+            if (event.key.keysym.mod & KMOD_SHIFT) {
+                zoomIn(config);
+            }
+            else 
+                zoomInitial(config);
+        } 
+        break;
+
+        case SDLK_F5: {
+            resetClock(config, digits);
+        } 
+        break;
+
+        case SDLK_F11: {
+            fullScreenToggle(window);
+        } 
+        break;
+    }
+}
+
+/*  mouse wheel */
+
 void mouseWheel(SDL_Event event, Config *config) {
     if (SDL_GetModState() & KMOD_CTRL) {
         if (event.wheel.y > 0) {
@@ -413,55 +466,8 @@ void mouseWheel(SDL_Event event, Config *config) {
 }
 
 
-/*  EVENT KEY DOWN  */
 
-void keyDownCases(SDL_Event event, Config *config, SDL_Texture *digits, SDL_Window *window) {
-                    // https://www.libsdl.org/release/SDL-1.2.15/docs/html/sdlkey.html
-                    switch (event.key.keysym.sym) {
-                        case SDLK_SPACE: {
-                            pauseToggle(config);
-                        } 
-                        break;
-
-                        case SDLK_KP_PLUS:
-
-                        case SDLK_EQUALS: {
-                            zoomInitial(config);
-                        } 
-                        break;
-
-                        case SDLK_KP_MINUS:
-
-                        case SDLK_MINUS: {
-                            zoomOut(config);
-                        } 
-                        break;
-
-                        case SDLK_KP_0:
-                        
-                        // in a spanish keyboard, 'equals key' is <shift+0> for zoom in
-                        case SDLK_0: {
-                            if (event.key.keysym.mod & KMOD_SHIFT) {
-                                zoomIn(config);
-                            }
-                            else 
-                                zoomInitial(config);
-                        } 
-                        break;
-
-                        case SDLK_F5: {
-                            resetClock(config, digits);
-                        } 
-                        break;
-
-                        case SDLK_F11: {
-                            fullScreenToggle(window);
-                        } 
-                        break;
-                    }
-}
-
-/* EVEN LOOP    */
+/* even loop    */
 void eventLoop(int *quit, Config *config, SDL_Window *window, SDL_Texture *digits) {
         SDL_Event event = {0};
         while (SDL_PollEvent(&event)) {
@@ -547,7 +553,23 @@ int main(int argc, char **argv) {
         
         eventLoop(&quit, &config, window, digits);
 
-        createRendering(window, renderer, digits, config);
+        // window size
+        int w;
+        int h;
+        windowSize(window, &w, &h);
+
+
+        float fit_scale = 1.0;
+        fitScale(w, h, &fit_scale);
+
+        int pen_x;
+        int pen_y;
+        initial_pen(w, h,
+                    &pen_x, &pen_y, 
+                    config.user_scale,
+                    fit_scale);
+        
+        createRendering(window, renderer, digits, config, fit_scale, pen_x, pen_y);
 
 
 
