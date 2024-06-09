@@ -200,8 +200,6 @@ void fullScreenToggle(SDL_Window *window) {
 }
 
 
-
-
 void windowSize(SDL_Window *window, int *w, int *h) {
     SDL_GetWindowSize(window, w, h);
 }
@@ -216,62 +214,24 @@ void render_digit_at(SDL_Renderer *renderer,
                      int *pen_y,
                      float user_scale, float fit_scale) {
 
-                        const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
-                        const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
-                        
-                        // selects digit from image
-                        const SDL_Rect src_rect = {(int) (digit_index*SPRITE_CHAR_WIDTH),
-                                                   (int) (wiggle_index*SPRITE_CHAR_HEIGHT),
-                                                   SPRITE_CHAR_WIDTH,
-                                                   SPRITE_CHAR_HEIGHT};
+   const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
+   const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
+   
+   // selects digit from image
+   const SDL_Rect src_rect = {(int) (digit_index*SPRITE_CHAR_WIDTH),
+                              (int) (wiggle_index*SPRITE_CHAR_HEIGHT),
+                              SPRITE_CHAR_WIDTH,
+                              SPRITE_CHAR_HEIGHT};
 
-                        // transforms digit chosen form image
-                        const SDL_Rect dst_rect = {*pen_x,
-                                                   *pen_y,
-                                                   effective_digit_width,
-                                                   effective_digit_height};
+   // transforms digit chosen form image
+   const SDL_Rect dst_rect = {*pen_x,
+                              *pen_y,
+                              effective_digit_width,
+                              effective_digit_height};
 
-                        SDL_RenderCopy(renderer, digits, &src_rect, &dst_rect);
-                        *pen_x += effective_digit_width;
+   SDL_RenderCopy(renderer, digits, &src_rect, &dst_rect);
+   *pen_x += effective_digit_width;
 }
-
-
-/*  pre:
-    post: window resize adjusted
-*/
-void fitScale(int w, int h, float *fit_scale) {
-    // width/height ratio
-    float text_aspect_ratio = (float) TEXT_WIDTH / (float) TEXT_HEIGHT;
-    float window_aspect_ratio = (float) w / (float) h;
-
-    if(text_aspect_ratio > window_aspect_ratio) {
-        *fit_scale = (float) w / (float) TEXT_WIDTH;
-    } else {
-        *fit_scale = (float) h / (float) TEXT_HEIGHT;
-    }
-}
-
-
-/*  pre:    window width w
-            window height h
-    post:   digit image size to be render render
-            width pen_w
-            height pen_h
-*/
-void initial_pen(int w, int h,
-                 int *pen_x,
-                 int *pen_y, 
-                 float user_scale,
-                 float fit_scale) {
-    
-    
-    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
-    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
-
-    *pen_x = w/2 - effective_digit_width*CHARS_COUNT/2;
-    *pen_y = h/2 - effective_digit_height/2;
-}
-
 
 
 void createRendering(SDL_Window *window, 
@@ -352,7 +312,43 @@ void createRendering(SDL_Window *window,
 
 
 
-/*  CONFIGURATION STATE  */
+/*  UPDATE CONFIGURATION STATE  */
+
+/*  pre:
+    post: window resize adjusted
+*/
+void fitScale(int w, int h, float *fit_scale) {
+    // width/height ratio
+    float text_aspect_ratio = (float) TEXT_WIDTH / (float) TEXT_HEIGHT;
+    float window_aspect_ratio = (float) w / (float) h;
+
+    if(text_aspect_ratio > window_aspect_ratio) {
+        *fit_scale = (float) w / (float) TEXT_WIDTH;
+    } else {
+        *fit_scale = (float) h / (float) TEXT_HEIGHT;
+    }
+}
+
+
+/*  pre:    window width w
+            window height h
+    post:   digit image size to be render render
+            width pen_w
+            height pen_h
+*/
+void initial_pen(int w, int h,
+                 int *pen_x,
+                 int *pen_y, 
+                 float user_scale,
+                 float fit_scale) {
+    
+    
+    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
+    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
+
+    *pen_x = w/2 - effective_digit_width*CHARS_COUNT/2;
+    *pen_y = h/2 - effective_digit_height/2;
+}
 
 /*  paused  */
 
@@ -399,6 +395,7 @@ void resetClock(Config *config, SDL_Texture *digits) {
             secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
         }
 }
+
 
 
 
@@ -469,26 +466,25 @@ void mouseWheel(SDL_Event event, Config *config) {
 
 /* even loop    */
 void eventLoop(int *quit, Config *config, SDL_Window *window, SDL_Texture *digits) {
-        SDL_Event event = {0};
-        while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-                case SDL_QUIT: {
-                    *quit = 1;
-                } break;
+    SDL_Event event = {0};
+    while (SDL_PollEvent(&event)) {
+        switch (event.type) {
+            case SDL_QUIT: {
+                *quit = 1;
+            } break;
 
-                case SDL_KEYDOWN: {
-                    keyDownCases(event, config, digits, window);
-                } break;
+            case SDL_KEYDOWN: {
+                keyDownCases(event, config, digits, window);
+            } break;
 
-                case SDL_MOUSEWHEEL: {
-                    mouseWheel(event, config);
-                } break;
+            case SDL_MOUSEWHEEL: {
+                mouseWheel(event, config);
+            } break;
 
-                default: {
-                }
+            default: {
             }
         }
-
+    }
 }
 
 
@@ -502,19 +498,18 @@ void eventLoop(int *quit, Config *config, SDL_Window *window, SDL_Texture *digit
 
 
 int main(int argc, char **argv) {
-    // INIT SDL
+    // init sdl
     initializeSDL();
 
-    // CREATE WINDOW
+    // create window
     SDL_Window *window;
     createWindow(&window);
 
-
-    // CREATE RENDERER
+    // create renderer
     SDL_Renderer *renderer;
     createRenderer(window, &renderer);
 
-    // CREATE DIGITS TEXTURE
+    // create digits texture
     SDL_Texture *digits = createTextureFromFile(renderer);
 
 
@@ -541,7 +536,7 @@ int main(int argc, char **argv) {
     }
 
     
-    // INFINITE LOOP
+    // infinite loop
     int quit = 0;
     while (!quit) {
 
