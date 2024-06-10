@@ -365,7 +365,9 @@ void fitScale(int w, int h, float *fit_scale) {
 
 /*  pre:    
     post:   cartesian coordinates
-            position where rendering starts to fit CHAR_COUNT characters at user_scale*fit_scale scale
+            position where rendering starts 
+            to fit CHAR_COUNT characters 
+            at user_scale*fit_scale scale
 */
 void initial_pen(int w, 
                  int h,
