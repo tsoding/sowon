@@ -9,10 +9,14 @@
 
 #include "./digits.h"
 
+/*  window    */
 #define TITLE_CAP 256
 #define SCALE_FACTOR 0.15f
+
+/*  frames  */
 #define FPS 60
 #define DELTA_TIME (1.0f / FPS)
+
 
 /*  sprite  */
 #define SPRITE_CHAR_WIDTH (300 / 2)
@@ -95,48 +99,6 @@ void secp(void *ptr)
 
 
 
-
-/*  TIME PARSER     */
-
-float parse_time(const char *time) {
-    float result = 0.0f;
-
-    while (*time) {
-        char *endptr = NULL;
-        float x = strtof(time, &endptr);
-
-        if (time == endptr) {
-            fprintf(stderr, "`%s` is not a number\n", time);
-            exit(1);
-        }
-
-        switch (*endptr) {
-            case '\0':
-
-            // seconds
-            case 's':
-                result += x;
-                break;
-            // minutes
-            case 'm':
-                result += x * 60.0f;
-                break;
-            // hours
-            case 'h':
-                result += x * 60.0f * 60.0f;
-                break;
-
-            default:
-                fprintf(stderr, "`%c` is an unknown time unit\n", *endptr);
-                exit(1);
-        }
-
-        time = endptr;
-        if (*time) time += 1;
-    }
-
-    return result;
-}
 
 
 
@@ -490,7 +452,73 @@ void eventLoop(int *quit, Config *config, SDL_Window *window, SDL_Texture *digit
 
 
 
+/*  TIME PARSER     */
 
+float parse_time(const char *time) {
+    float result = 0.0f;
+
+    while (*time) {
+        char *endptr = NULL;
+        float x = strtof(time, &endptr);
+
+        if (time == endptr) {
+            fprintf(stderr, "`%s` is not a number\n", time);
+            exit(1);
+        }
+
+        switch (*endptr) {
+            case '\0':
+
+            // seconds
+            case 's':
+                result += x;
+                break;
+            // minutes
+            case 'm':
+                result += x * 60.0f;
+                break;
+            // hours
+            case 'h':
+                result += x * 60.0f * 60.0f;
+                break;
+
+            default:
+                fprintf(stderr, "`%c` is an unknown time unit\n", *endptr);
+                exit(1);
+        }
+
+        time = endptr;
+        if (*time) time += 1;
+    }
+
+    return result;
+}
+
+void argumentParser(int argc, char **argv, Config *config) {
+
+    // argument parser
+    for (int i = 1; i < argc; ++i) {
+        // pause
+        if (strcmp(argv[i], "-p") == 0) {
+            config->p_flag = 1;
+            config->paused = 1;
+        } 
+        // exist
+        else if (strcmp(argv[i], "-e") == 0) {
+            config->exit_after_countdown = 1;
+        }
+        // time clock
+        else if (strcmp(argv[i], "clock") == 0) {
+            config->mode = MODE_CLOCK;
+        }
+        // countdown
+        else {
+            config->mode = MODE_COUNTDOWN;
+            config->displayed_time = parse_time(argv[i]);
+            config->displayed_time_initial = config->displayed_time;
+        }
+    }
+}
 
 
 
@@ -512,28 +540,11 @@ int main(int argc, char **argv) {
     // create digits texture
     SDL_Texture *digits = createTextureFromFile(renderer);
 
-
-    // configuration 
+    // configuration
+    // stop watch MODE_ASCENDING
     Config config = {MODE_ASCENDING, 0.0f, 0.0f, 0, 0, 0, WIGGLE_DURATION, 1.0f, "hello world",0};
 
-
-    for (int i = 1; i < argc; ++i) {
-        if (strcmp(argv[i], "-p") == 0) {
-            config.p_flag = 1;
-            config.paused = 1;
-        } 
-        else if (strcmp(argv[i], "-e") == 0) {
-            config.exit_after_countdown = 1;
-        } 
-        else if (strcmp(argv[i], "clock") == 0) {
-            config.mode = MODE_CLOCK;
-        } 
-        else {
-            config.mode = MODE_COUNTDOWN;
-            config.displayed_time = parse_time(argv[i]);
-            config.displayed_time_initial = config.displayed_time;
-        }
-    }
+    argumentParser(argc, argv, &config);
 
     
     // infinite loop
