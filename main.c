@@ -176,11 +176,22 @@ void srcRect(int digit_index, int wiggle_index, SDL_Rect *src_rect) {
                               SPRITE_CHAR_HEIGHT};
 }
 
-void dstRect(int pen_x, int pen_y, int effective_digit_width, int effective_digit_height, SDL_Rect *dst_rect) {
-   *dst_rect = (SDL_Rect){pen_x,
+void dstRect(int *pen_x, int pen_y, float user_scale, float fit_scale, SDL_Rect *dst_rect) {
+
+   // RESIZING DIGIT 
+   // transforms digit chosen form image
+   // new dimensions
+   const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
+   const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
+
+
+   *dst_rect = (SDL_Rect){*pen_x,
                           pen_y,
                           effective_digit_width,
                           effective_digit_height};
+
+    // new cartesian coordinates of next new digit
+   *pen_x += effective_digit_width;
 }
 
 
@@ -199,22 +210,12 @@ void render_digit_at(SDL_Renderer *renderer,
    SDL_Rect src_rect;
    srcRect(digit_index, wiggle_index, &src_rect);
    
-
-   // RESIZING DIGIT 
-   // transforms digit chosen form image
-   // new dimensions
-   const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
-   const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
-
    SDL_Rect dst_rect;
-   dstRect(*pen_x, *pen_y, effective_digit_width, effective_digit_height, &dst_rect);
-
+   dstRect(pen_x, *pen_y, user_scale, fit_scale, &dst_rect);
 
    // ADDS EACH NEW DIGIT TO RENDERER, ONE BY ONE
    SDL_RenderCopy(renderer, digits, &src_rect, &dst_rect);
     
-    // new cartesian coordinates of next new digit
-   *pen_x += effective_digit_width;
 }
 
 
