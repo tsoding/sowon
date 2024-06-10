@@ -203,6 +203,13 @@ void createRendering(SDL_Window *window,
 
         SDL_SetRenderDrawColor(renderer, BACKGROUND_COLOR_R, BACKGROUND_COLOR_G, BACKGROUND_COLOR_B, 255);
 
+        if (config.paused) {
+            secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
+        } else {
+            secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
+        }
+        
+
         SDL_RenderClear(renderer);
 
 
@@ -358,7 +365,10 @@ void resetClock(Config *config, SDL_Texture *digits) {
         }
 }
 
-
+int quitSDL() {
+   SDL_Quit();
+   return 0;
+}
 
 
 
@@ -494,9 +504,21 @@ float parse_time(const char *time) {
     return result;
 }
 
+
+// ARGUMENT PARSER
 void argumentParser(int argc, char **argv, Config *config) {
 
-    // argument parser
+    *config = (Config){MODE_ASCENDING, 
+                       0.0f, 
+                       0.0f, 
+                       0, 
+                       0, 
+                       0, 
+                       WIGGLE_DURATION, 
+                       1.0f, 
+                       "hello world",
+                       0};
+
     for (int i = 1; i < argc; ++i) {
         // pause
         if (strcmp(argv[i], "-p") == 0) {
@@ -520,7 +542,79 @@ void argumentParser(int argc, char **argv, Config *config) {
     }
 }
 
+// INFINITE LOOP
+void infiniteLoop(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *digits, Config *config) {
+    int quit = 0;
+    while (!quit) {
 
+        eventLoop(&quit, config, window, digits);
+
+        // window size
+        int w;
+        int h;
+        windowSize(window, &w, &h);
+
+        // fit scale
+        float fit_scale = 1.0;
+        fitScale(w, h, &fit_scale);
+        
+        // user_scale
+        float user_scale = config->user_scale;
+        
+        // pen
+        int pen_x;
+        int pen_y;
+        initial_pen(w, h,
+                    &pen_x, &pen_y, 
+                    user_scale,
+                    fit_scale);
+        
+        createRendering(window, renderer, digits, *config, fit_scale, pen_x, pen_y);
+
+
+
+        // UPDATE BEGIN //////////////////////////////
+        if (config->wiggle_cooldown <= 0.0f) {
+            config->wiggle_index++;
+            config->wiggle_cooldown = WIGGLE_DURATION;
+        }
+
+        config->wiggle_cooldown -= DELTA_TIME;
+
+        if (!config->paused) {
+            switch (config->mode) {
+                case MODE_ASCENDING: {
+                    config->displayed_time += DELTA_TIME;
+                } 
+                break;
+                case MODE_COUNTDOWN: {
+                    if (config->displayed_time > 1e-6) {
+                        config->displayed_time -= DELTA_TIME;
+                    } 
+                    else {
+                        config->displayed_time = 0.0f;
+                        if (config->exit_after_countdown) {
+                            quitSDL();
+                        }
+                    }
+                } 
+                break;
+
+                case MODE_CLOCK: {
+                    time_t t = time(NULL);
+                    struct tm *tm = localtime(&t);
+                    config->displayed_time = tm->tm_sec
+                                   + tm->tm_min  * 60.0f
+                                   + tm->tm_hour * 60.0f * 60.0f;
+                } 
+                break;
+            }
+        }
+        // UPDATE END //////////////////////////////
+
+        SDL_Delay((int) floorf(DELTA_TIME * 1000.0f));
+    }
+}
 
 /*  MAIN    */
 
@@ -538,91 +632,17 @@ int main(int argc, char **argv) {
     createRenderer(window, &renderer);
 
     // create digits texture
-    SDL_Texture *digits = createTextureFromFile(renderer);
+    SDL_Texture *digits;
+    digits = createTextureFromFile(renderer);
 
     // configuration
     // stop watch MODE_ASCENDING
-    Config config = {MODE_ASCENDING, 0.0f, 0.0f, 0, 0, 0, WIGGLE_DURATION, 1.0f, "hello world",0};
-
+    Config config;
     argumentParser(argc, argv, &config);
 
+    infiniteLoop(window, renderer, digits, &config);
     
-    // infinite loop
-    int quit = 0;
-    while (!quit) {
-
-        if (config.paused) {
-            secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
-        } else {
-            secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
-        }
-        
-        eventLoop(&quit, &config, window, digits);
-
-        // window size
-        int w;
-        int h;
-        windowSize(window, &w, &h);
-
-
-        float fit_scale = 1.0;
-        fitScale(w, h, &fit_scale);
-
-        int pen_x;
-        int pen_y;
-        initial_pen(w, h,
-                    &pen_x, &pen_y, 
-                    config.user_scale,
-                    fit_scale);
-        
-        createRendering(window, renderer, digits, config, fit_scale, pen_x, pen_y);
-
-
-
-        // UPDATE BEGIN //////////////////////////////
-        if (config.wiggle_cooldown <= 0.0f) {
-            config.wiggle_index++;
-            config.wiggle_cooldown = WIGGLE_DURATION;
-        }
-
-        config.wiggle_cooldown -= DELTA_TIME;
-
-        if (!config.paused) {
-            switch (config.mode) {
-                case MODE_ASCENDING: {
-                    config.displayed_time += DELTA_TIME;
-                } 
-                break;
-                case MODE_COUNTDOWN: {
-                    if (config.displayed_time > 1e-6) {
-                        config.displayed_time -= DELTA_TIME;
-                    } 
-                    else {
-                        config.displayed_time = 0.0f;
-                        if (config.exit_after_countdown) {
-                            SDL_Quit();
-                            return 0;
-                        }
-                    }
-                } 
-                break;
-
-                case MODE_CLOCK: {
-                    time_t t = time(NULL);
-                    struct tm *tm = localtime(&t);
-                    config.displayed_time = tm->tm_sec
-                                   + tm->tm_min  * 60.0f
-                                   + tm->tm_hour * 60.0f * 60.0f;
-                } 
-                break;
-            }
-        }
-        // UPDATE END //////////////////////////////
-
-        SDL_Delay((int) floorf(DELTA_TIME * 1000.0f));
-    }
-
-    SDL_Quit();
+    quitSDL();
 
     return 0;
 }
