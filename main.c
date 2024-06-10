@@ -149,6 +149,10 @@ SDL_Texture *createTextureFromFile(SDL_Renderer *renderer) {
 }
 
 
+void windowSize(SDL_Window *window, int *w, int *h) {
+    SDL_GetWindowSize(window, w, h);
+}
+
 void fullScreenToggle(SDL_Window *window) {
     Uint32 window_flags;
     secc(window_flags = SDL_GetWindowFlags(window));
@@ -162,67 +166,101 @@ void fullScreenToggle(SDL_Window *window) {
 }
 
 
-void windowSize(SDL_Window *window, int *w, int *h) {
-    SDL_GetWindowSize(window, w, h);
-}
 
 
-/*  choosing subimage from and image    */
+
+
+
+/*  choosing subimage from and image    
+    and resizing */
 void render_digit_at(SDL_Renderer *renderer, 
                      SDL_Texture *digits, 
-                     size_t digit_index,
-                     size_t wiggle_index,
+                     size_t digit_index,     // column
+                     size_t wiggle_index,       // row
                      int *pen_x,
                      int *pen_y,
-                     float user_scale, float fit_scale) {
+                     float user_scale, 
+                     float fit_scale) {
 
-   const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
-   const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
-   
-   // selects digit from image
+
+   // SELECTS DIGIT FROM DIGITS.PNG DIGITS IMAGE
+   // digit_index, column
+   // wiggle_index, row
    const SDL_Rect src_rect = {(int) (digit_index*SPRITE_CHAR_WIDTH),
                               (int) (wiggle_index*SPRITE_CHAR_HEIGHT),
                               SPRITE_CHAR_WIDTH,
                               SPRITE_CHAR_HEIGHT};
 
+   
+
+   // RESIZING DIGIT 
    // transforms digit chosen form image
+   // new dimensions
+   const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
+   const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
    const SDL_Rect dst_rect = {*pen_x,
                               *pen_y,
                               effective_digit_width,
                               effective_digit_height};
 
+
+
+   // ADDS EACH NEW DIGIT TO RENDERER, ONE BY ONE
    SDL_RenderCopy(renderer, digits, &src_rect, &dst_rect);
+    
+    // new cartesian coordinates of next new digit
    *pen_x += effective_digit_width;
 }
+
+
+
 
 
 void createRendering(SDL_Window *window, 
                      SDL_Renderer *renderer, 
                      SDL_Texture *digits, 
-                     Config config, float fit_scale, int pen_x, int pen_y) {
-
+                     Config config, 
+                     float fit_scale, 
+                     int pen_x, 
+                     int pen_y) {
+        
+        // black background color 
         SDL_SetRenderDrawColor(renderer, BACKGROUND_COLOR_R, BACKGROUND_COLOR_G, BACKGROUND_COLOR_B, 255);
-
+        
+        // texture colour, digits
         if (config.paused) {
             secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
         } else {
             secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
         }
         
-
         SDL_RenderClear(renderer);
 
 
 
-        const size_t t = (size_t) ceilf(fmaxf(config.displayed_time, 0.0f));
 
         // TODO: support amount of hours >99
 
+        const size_t time = (size_t) ceilf(fmaxf(config.displayed_time, 0.0f));
+
         /*  hours   */
-        const size_t hours = t/60/60;
+        const size_t hours = time/60/60;
+        const size_t hoursfirstdigit = hours/10;
+        const size_t hoursseconddigit = hours%10;
+
+        /*  minutes */
+        const size_t minutes = time/60%60;
+        const size_t minutesfirstdigit = minutes/10;
+        const size_t minutesseconddigit = minutes%10;
+
+        /*  seconds */
+        const size_t seconds = time % 60;
+        const size_t secondsfirstdigit = seconds/10;
+        const size_t secondsseconddigit = seconds%10;
+        
         render_digit_at(renderer, 
                         digits, 
-                        hours/10,
+                        hoursfirstdigit,
                         config.wiggle_index%WIGGLE_COUNT,
                         &pen_x, &pen_y,
                         config.user_scale,
@@ -230,7 +268,7 @@ void createRendering(SDL_Window *window,
 
         render_digit_at(renderer,
                         digits, 
-                        hours%10,
+                        hoursseconddigit,
                         (config.wiggle_index + 1)%WIGGLE_COUNT,
                         &pen_x, &pen_y,
                         config.user_scale, 
@@ -244,10 +282,22 @@ void createRendering(SDL_Window *window,
                         config.user_scale, 
                         fit_scale);
         
-        /*  minutes */
-        const size_t minutes = t/60%60;
-        render_digit_at(renderer, digits, minutes/10, (config.wiggle_index+2)%WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
-        render_digit_at(renderer, digits, minutes%10, (config.wiggle_index+3)%WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
+
+        render_digit_at(renderer, 
+                        digits, 
+                        minutesfirstdigit, 
+                        (config.wiggle_index+2)%WIGGLE_COUNT, 
+                        &pen_x, &pen_y, 
+                        config.user_scale, 
+                        fit_scale);
+
+        render_digit_at(renderer, 
+                        digits, 
+                        minutesseconddigit, 
+                        (config.wiggle_index+3)%WIGGLE_COUNT, 
+                        &pen_x, &pen_y, 
+                        config.user_scale, 
+                        fit_scale);
 
         render_digit_at(renderer, 
                         digits,
@@ -257,10 +307,21 @@ void createRendering(SDL_Window *window,
                         config.user_scale, 
                         fit_scale);
         
-        /*  seconds */
-        const size_t seconds = t % 60;
-        render_digit_at(renderer, digits, seconds/10, (config.wiggle_index+4) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
-        render_digit_at(renderer, digits, seconds%10, (config.wiggle_index+5) % WIGGLE_COUNT, &pen_x, &pen_y, config.user_scale, fit_scale);
+
+        render_digit_at(renderer, 
+                        digits, 
+                        secondsfirstdigit, 
+                        (config.wiggle_index+4)%WIGGLE_COUNT, &pen_x, &pen_y, 
+                        config.user_scale, 
+                        fit_scale);
+
+        render_digit_at(renderer, 
+                        digits, 
+                        secondsseconddigit, 
+                        (config.wiggle_index+5)%WIGGLE_COUNT, 
+                        &pen_x, &pen_y, 
+                        config.user_scale, 
+                        fit_scale);
 
 
         /*  print time as window's title */
@@ -508,6 +569,7 @@ float parse_time(const char *time) {
 // ARGUMENT PARSER
 void argumentParser(int argc, char **argv, Config *config) {
 
+    // MODE_ASCENDING: stop watch 
     *config = (Config){MODE_ASCENDING, 
                        0.0f, 
                        0.0f, 
@@ -542,38 +604,8 @@ void argumentParser(int argc, char **argv, Config *config) {
     }
 }
 
-// INFINITE LOOP
-void infiniteLoop(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *digits, Config *config) {
-    int quit = 0;
-    while (!quit) {
-
-        eventLoop(&quit, config, window, digits);
-
-        // window size
-        int w;
-        int h;
-        windowSize(window, &w, &h);
-
-        // fit scale
-        float fit_scale = 1.0;
-        fitScale(w, h, &fit_scale);
-        
-        // user_scale
-        float user_scale = config->user_scale;
-        
-        // pen
-        int pen_x;
-        int pen_y;
-        initial_pen(w, h,
-                    &pen_x, &pen_y, 
-                    user_scale,
-                    fit_scale);
-        
-        createRendering(window, renderer, digits, *config, fit_scale, pen_x, pen_y);
-
-
-
-        // UPDATE BEGIN //////////////////////////////
+// UPDATE
+void updateConfig(Config *config) {
         if (config->wiggle_cooldown <= 0.0f) {
             config->wiggle_index++;
             config->wiggle_cooldown = WIGGLE_DURATION;
@@ -610,33 +642,61 @@ void infiniteLoop(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *digit
                 break;
             }
         }
-        // UPDATE END //////////////////////////////
+}
+
+// INFINITE LOOP
+void infiniteLoop(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *digits, Config *config) {
+    int quit = 0;
+    while (!quit) {
+
+        eventLoop(&quit, config, window, digits);
+
+        // window size
+        int w;
+        int h;
+        windowSize(window, &w, &h);
+
+        // fit scale
+        float fit_scale = 1.0;
+        fitScale(w, h, &fit_scale);
+        
+        // user_scale
+        float user_scale = config->user_scale;
+        
+        // pen
+        int pen_x;
+        int pen_y;
+        initial_pen(w, h,
+                    &pen_x, &pen_y, 
+                    user_scale,
+                    fit_scale);
+        
+        createRendering(window, renderer, digits, *config, fit_scale, pen_x, pen_y);
+
+        
+        updateConfig(config);
+
 
         SDL_Delay((int) floorf(DELTA_TIME * 1000.0f));
     }
 }
 
+
+
+
 /*  MAIN    */
-
-
 int main(int argc, char **argv) {
-    // init sdl
     initializeSDL();
 
-    // create window
     SDL_Window *window;
     createWindow(&window);
 
-    // create renderer
     SDL_Renderer *renderer;
     createRenderer(window, &renderer);
 
-    // create digits texture
     SDL_Texture *digits;
     digits = createTextureFromFile(renderer);
 
-    // configuration
-    // stop watch MODE_ASCENDING
     Config config;
     argumentParser(argc, argv, &config);
 
