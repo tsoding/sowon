@@ -166,7 +166,15 @@ void fullScreenToggle(SDL_Window *window) {
 }
 
 
-
+// SELECTS DIGIT FROM DIGITS.PNG DIGITS IMAGE
+// digit_index, column
+// wiggle_index, row
+void srcRect(int digit_index, int wiggle_index, SDL_Rect *src_rect) {
+   *src_rect = (SDL_Rect){(int) (digit_index*SPRITE_CHAR_WIDTH),
+                              (int) (wiggle_index*SPRITE_CHAR_HEIGHT),
+                              SPRITE_CHAR_WIDTH,
+                              SPRITE_CHAR_HEIGHT};
+}
 
 
 
@@ -183,14 +191,8 @@ void render_digit_at(SDL_Renderer *renderer,
                      float fit_scale) {
 
 
-   // SELECTS DIGIT FROM DIGITS.PNG DIGITS IMAGE
-   // digit_index, column
-   // wiggle_index, row
-   const SDL_Rect src_rect = {(int) (digit_index*SPRITE_CHAR_WIDTH),
-                              (int) (wiggle_index*SPRITE_CHAR_HEIGHT),
-                              SPRITE_CHAR_WIDTH,
-                              SPRITE_CHAR_HEIGHT};
-
+   SDL_Rect src_rect;
+   srcRect(digit_index, wiggle_index, &src_rect);
    
 
    // RESIZING DIGIT 
