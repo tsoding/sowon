@@ -348,6 +348,9 @@ void createRendering(SDL_Window *window,
     post: window resize adjusted
 */
 void fitScale(int w, int h, float *fit_scale) {
+
+    *fit_scale = 1.0;
+
     // width/height ratio
     float text_aspect_ratio = (float) TEXT_WIDTH / (float) TEXT_HEIGHT;
     float window_aspect_ratio = (float) w / (float) h;
@@ -360,25 +363,32 @@ void fitScale(int w, int h, float *fit_scale) {
 }
 
 
-/*  pre:    window width w
-            window height h
-    post:   digit image size to be render render
-            width pen_w
-            height pen_h
+/*  pre:    
+    post:   cartesian coordinates
+            position where rendering starts to fit CHAR_COUNT characters at user_scale*fit_scale scale
 */
-void initial_pen(int w, int h,
-                 int *pen_x,
-                 int *pen_y, 
+void initial_pen(int w, 
+                 int h,
                  float user_scale,
-                 float fit_scale) {
+                 float fit_scale, 
+                 int *pen_x,
+                 int *pen_y) {
     
+    // character width after scaling 
+    const int effective_digit_width = (int)floorf(
+                                                    (float)CHAR_WIDTH*user_scale*fit_scale
+                                                 );
+    // character height after scaling
+    const int effective_digit_height = (int)floorf(
+                                                    (float)CHAR_HEIGHT*user_scale*fit_scale
+                                                  );
     
-    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
-    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
-
+    // position where rendering starts 
     *pen_x = w/2 - effective_digit_width*CHARS_COUNT/2;
     *pen_y = h/2 - effective_digit_height/2;
 }
+
+
 
 /*  paused  */
 
@@ -523,8 +533,10 @@ void eventLoop(int *quit, Config *config, SDL_Window *window, SDL_Texture *digit
 
 
 
-/*  TIME PARSER     */
 
+/********** PARSERS **********/
+
+/*  time parser     */
 float parse_time(const char *time) {
     float result = 0.0f;
 
@@ -566,7 +578,7 @@ float parse_time(const char *time) {
 }
 
 
-// ARGUMENT PARSER
+/* argument parser  */
 void argumentParser(int argc, char **argv, Config *config) {
 
     // MODE_ASCENDING: stop watch 
@@ -603,6 +615,10 @@ void argumentParser(int argc, char **argv, Config *config) {
         }
     }
 }
+
+
+
+
 
 // UPDATE
 void updateConfig(Config *config) {
@@ -651,28 +667,30 @@ void infiniteLoop(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *digit
 
         eventLoop(&quit, config, window, digits);
 
-        // window size
+        // window width and height
         int w;
         int h;
         windowSize(window, &w, &h);
 
-        // fit scale
-        float fit_scale = 1.0;
+        // widow resize 
+        float fit_scale;
         fitScale(w, h, &fit_scale);
         
-        // user_scale
+        // zoom
         float user_scale = config->user_scale;
         
         // pen
         int pen_x;
         int pen_y;
-        initial_pen(w, h,
-                    &pen_x, &pen_y, 
+        initial_pen(w,
+                    h,
                     user_scale,
-                    fit_scale);
-        
-        createRendering(window, renderer, digits, *config, fit_scale, pen_x, pen_y);
+                    fit_scale,
+                    &pen_x, 
+                    &pen_y);
+       
 
+        createRendering(window, renderer, digits, *config, fit_scale, pen_x, pen_y);
         
         updateConfig(config);
 
