@@ -176,7 +176,12 @@ void srcRect(int digit_index, int wiggle_index, SDL_Rect *src_rect) {
                               SPRITE_CHAR_HEIGHT};
 }
 
-
+void dstRect(int pen_x, int pen_y, int effective_digit_width, int effective_digit_height, SDL_Rect *dst_rect) {
+   *dst_rect = (SDL_Rect){pen_x,
+                          pen_y,
+                          effective_digit_width,
+                          effective_digit_height};
+}
 
 
 /*  choosing subimage from and image    
@@ -200,11 +205,9 @@ void render_digit_at(SDL_Renderer *renderer,
    // new dimensions
    const int effective_digit_width = (int) floorf((float) CHAR_WIDTH * user_scale * fit_scale);
    const int effective_digit_height = (int) floorf((float) CHAR_HEIGHT * user_scale * fit_scale);
-   const SDL_Rect dst_rect = {*pen_x,
-                              *pen_y,
-                              effective_digit_width,
-                              effective_digit_height};
 
+   SDL_Rect dst_rect;
+   dstRect(*pen_x, *pen_y, effective_digit_width, effective_digit_height, &dst_rect);
 
 
    // ADDS EACH NEW DIGIT TO RENDERER, ONE BY ONE
