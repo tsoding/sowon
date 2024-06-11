@@ -227,16 +227,25 @@ void render_digit_at(SDL_Renderer *renderer,
 }
 
 
+void hoursMinutesSeconds(Config *config, size_t *hours, size_t *minutes, size_t *seconds) {
+        // TODO: support amount of hours >99
+
+        const size_t time = (size_t) ceilf(fmaxf(config->displayed_time, 0.0f));
+        *hours = time/60/60;
+        *minutes = time/60%60;
+        *seconds = time % 60;
+}
 
 
-
-void createRendering(SDL_Window *window, 
-                     SDL_Renderer *renderer, 
+void createRendering(SDL_Renderer *renderer, 
                      SDL_Texture *digits, 
                      Config config, 
                      float fit_scale, 
                      int pen_x, 
-                     int pen_y) {
+                     int pen_y,
+                     size_t hours,
+                     size_t minutes,
+                     size_t seconds) {
         
         // black background color 
         SDL_SetRenderDrawColor(renderer, BACKGROUND_COLOR_R, BACKGROUND_COLOR_G, BACKGROUND_COLOR_B, 255);
@@ -253,22 +262,16 @@ void createRendering(SDL_Window *window,
 
 
 
-        // TODO: support amount of hours >99
-
-        const size_t time = (size_t) ceilf(fmaxf(config.displayed_time, 0.0f));
 
         /*  hours   */
-        const size_t hours = time/60/60;
         const size_t hoursfirstdigit = hours/10;
         const size_t hoursseconddigit = hours%10;
 
         /*  minutes */
-        const size_t minutes = time/60%60;
         const size_t minutesfirstdigit = minutes/10;
         const size_t minutesseconddigit = minutes%10;
 
         /*  seconds */
-        const size_t seconds = time % 60;
         const size_t secondsfirstdigit = seconds/10;
         const size_t secondsseconddigit = seconds%10;
    
@@ -405,20 +408,24 @@ void createRendering(SDL_Window *window,
                         &dst_rect);
 
 
+}
+
+void timeInWindowTitle(SDL_Window *window, Config *config, size_t hours, size_t minutes, size_t seconds) {
+
         /*  print time as window's title */
-        char title[TITLE_CAP];
+        char title[TITLE_CAP] ="Hello World!";
         snprintf(title, sizeof(title), "%02zu:%02zu:%02zu - sowon", hours, minutes, seconds);
 
-        if (strcmp(config.prev_title, title) != 0) {
+        if (strcmp(config->prev_title, title) != 0) {
             SDL_SetWindowTitle(window, title);
         }
 
-        memcpy(title, config.prev_title, TITLE_CAP);
-
-
-        SDL_RenderPresent(renderer);
+        memcpy(title, config->prev_title, TITLE_CAP);
 }
 
+void renderingToScreen(SDL_Renderer *renderer) {
+        SDL_RenderPresent(renderer);
+}
 
 
 
@@ -797,7 +804,11 @@ void infiniteLoop(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *digit
 
         eventLoop(&quit, config, window, digits);
         
-        createRendering(window, renderer, digits, *config, config->fit_scale, config->pen_x, config->pen_y);
+        size_t hours, minutes, seconds;
+        hoursMinutesSeconds(config, &hours, &minutes, &seconds);
+        createRendering(renderer, digits, *config, config->fit_scale, config->pen_x, config->pen_y, hours, minutes, seconds);
+        timeInWindowTitle(window, config, hours, minutes, seconds);
+        renderingToScreen(renderer);
         
         updateConfig(window, config);
 
