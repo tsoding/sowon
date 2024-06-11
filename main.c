@@ -71,6 +71,11 @@ typedef struct Config {
     float user_scale;
     char prev_title[TITLE_CAP];
     int p_flag;
+    int w;
+    int h;
+    float fit_scale;
+    int pen_x;
+    int pen_y;
 } Config;
 
 
@@ -589,18 +594,6 @@ float parse_time(const char *time) {
 /* argument parser  */
 void argumentParser(int argc, char **argv, Config *config) {
 
-    // MODE_ASCENDING: stop watch 
-    *config = (Config){MODE_ASCENDING, 
-                       0.0f, 
-                       0.0f, 
-                       0, 
-                       0, 
-                       0, 
-                       WIGGLE_DURATION, 
-                       1.0f, 
-                       "hello world",
-                       0};
-
     for (int i = 1; i < argc; ++i) {
         // pause
         if (strcmp(argv[i], "-p") == 0) {
@@ -624,17 +617,66 @@ void argumentParser(int argc, char **argv, Config *config) {
     }
 }
 
+void initialConfig(SDL_Window *window, Config *config) {
+
+    // MODE_ASCENDING: stop watch 
+    *config = (Config){MODE_ASCENDING, 
+                       0.0f, 
+                       0.0f, 
+                       0, 
+                       0, 
+                       0, 
+                       WIGGLE_DURATION, 
+                       1.0f, 
+                       "hello world",
+                       0,
+                       0,
+                       0,
+                       0.0f,
+                       0,
+                       0};
+
+        // window width and height
+        windowSize(window, &config->w, &config->h);
+
+        // widow resize 
+        fitScale(config->w, config->h, &config->fit_scale);
+        
+        // pen
+        initial_pen(config->w,
+                    config->h,
+                    config->user_scale,
+                    config->fit_scale,
+                    &config->pen_x, 
+                    &config->pen_y);
+}
+
 
 
 
 
 // UPDATE
-void updateConfig(Config *config) {
+
+void updateConfig(SDL_Window *window, Config *config) {
+
+        // window width and height
+        windowSize(window, &config->w, &config->h);
+
+        // widow resize 
+        fitScale(config->w, config->h, &config->fit_scale);
+        
+        // pen
+        initial_pen(config->w,
+                    config->h,
+                    config->user_scale,
+                    config->fit_scale,
+                    &config->pen_x, 
+                    &config->pen_y);
+
         if (config->wiggle_cooldown <= 0.0f) {
             config->wiggle_index++;
             config->wiggle_cooldown = WIGGLE_DURATION;
         }
-
         config->wiggle_cooldown -= DELTA_TIME;
 
         if (!config->paused) {
@@ -643,6 +685,7 @@ void updateConfig(Config *config) {
                     config->displayed_time += DELTA_TIME;
                 } 
                 break;
+
                 case MODE_COUNTDOWN: {
                     if (config->displayed_time > 1e-6) {
                         config->displayed_time -= DELTA_TIME;
@@ -674,34 +717,10 @@ void infiniteLoop(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *digit
     while (!quit) {
 
         eventLoop(&quit, config, window, digits);
-
-        // window width and height
-        int w;
-        int h;
-        windowSize(window, &w, &h);
-
-        // widow resize 
-        float fit_scale;
-        fitScale(w, h, &fit_scale);
         
-        // zoom
-        float user_scale = config->user_scale;
+        createRendering(window, renderer, digits, *config, config->fit_scale, config->pen_x, config->pen_y);
         
-        // pen
-        int pen_x;
-        int pen_y;
-        initial_pen(w,
-                    h,
-                    user_scale,
-                    fit_scale,
-                    &pen_x, 
-                    &pen_y);
-       
-
-        createRendering(window, renderer, digits, *config, fit_scale, pen_x, pen_y);
-        
-        updateConfig(config);
-
+        updateConfig(window, config);
 
         SDL_Delay((int) floorf(DELTA_TIME * 1000.0f));
     }
@@ -725,6 +744,7 @@ int main(int argc, char **argv) {
 
     Config config;
     argumentParser(argc, argv, &config);
+    initialConfig(window, &config);
 
     infiniteLoop(window, renderer, digits, &config);
     
