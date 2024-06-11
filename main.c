@@ -657,6 +657,46 @@ void initialConfig(SDL_Window *window, Config *config) {
 
 // UPDATE
 
+void wiggleCoolDown(Config *config) {
+    if (config->wiggle_cooldown <= 0.0f) {
+        config->wiggle_index++;
+        config->wiggle_cooldown = WIGGLE_DURATION;
+    }
+
+    config->wiggle_cooldown -= DELTA_TIME;
+}
+
+void updateTime(Config *config) {
+    switch (config->mode) {
+        case MODE_ASCENDING: {
+            config->displayed_time += DELTA_TIME;
+        } 
+        break;
+    
+        case MODE_COUNTDOWN: {
+            if (config->displayed_time > 1e-6) {
+                config->displayed_time -= DELTA_TIME;
+            } 
+            else {
+                config->displayed_time = 0.0f;
+                if (config->exit_after_countdown) {
+                    quitSDL();
+                }
+            }
+        } 
+        break;
+    
+        case MODE_CLOCK: {
+            time_t t = time(NULL);
+            struct tm *tm = localtime(&t);
+            config->displayed_time = tm->tm_sec
+                           + tm->tm_min  * 60.0f
+                           + tm->tm_hour * 60.0f * 60.0f;
+        } 
+        break;
+    }
+}
+
 void updateConfig(SDL_Window *window, Config *config) {
 
         // window width and height
@@ -673,41 +713,10 @@ void updateConfig(SDL_Window *window, Config *config) {
                     &config->pen_x, 
                     &config->pen_y);
 
-        if (config->wiggle_cooldown <= 0.0f) {
-            config->wiggle_index++;
-            config->wiggle_cooldown = WIGGLE_DURATION;
-        }
-        config->wiggle_cooldown -= DELTA_TIME;
+        wiggleCoolDown(config);
 
         if (!config->paused) {
-            switch (config->mode) {
-                case MODE_ASCENDING: {
-                    config->displayed_time += DELTA_TIME;
-                } 
-                break;
-
-                case MODE_COUNTDOWN: {
-                    if (config->displayed_time > 1e-6) {
-                        config->displayed_time -= DELTA_TIME;
-                    } 
-                    else {
-                        config->displayed_time = 0.0f;
-                        if (config->exit_after_countdown) {
-                            quitSDL();
-                        }
-                    }
-                } 
-                break;
-
-                case MODE_CLOCK: {
-                    time_t t = time(NULL);
-                    struct tm *tm = localtime(&t);
-                    config->displayed_time = tm->tm_sec
-                                   + tm->tm_min  * 60.0f
-                                   + tm->tm_hour * 60.0f * 60.0f;
-                } 
-                break;
-            }
+            updateTime(config);
         }
 }
 
