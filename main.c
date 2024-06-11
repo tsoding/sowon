@@ -216,28 +216,6 @@ void dstRect(int *pen_x,
 /*  choosing subimage from and image    
     and resizing */
 void render_digit_at(SDL_Renderer *renderer, 
-                     SDL_Texture *digits, 
-                     size_t digit_index,     // column
-                     size_t wiggle_index,       // row
-                     int *pen_x,
-                     int *pen_y,
-                     float user_scale, 
-                     float fit_scale) {
-
-
-   SDL_Rect src_rect;
-   srcRect(digit_index, wiggle_index, &src_rect);
-   
-   SDL_Rect dst_rect;
-   dstRect(pen_x, *pen_y, user_scale, fit_scale, &dst_rect);
-
-   // ADDS EACH NEW DIGIT TO RENDERER, ONE BY ONE
-   SDL_RenderCopy(renderer, digits, &src_rect, &dst_rect);
-    
-}
-
-
-void render_digit_at2(SDL_Renderer *renderer, 
                      SDL_Texture *digits,
                      SDL_Rect *src_rect,
                      SDL_Rect *dst_rect) {
@@ -299,42 +277,19 @@ void createRendering(SDL_Window *window,
 
         SDL_Rect src_rect;
         SDL_Rect dst_rect;
-        
-        srcRect(hoursfirstdigit, config.wiggle_index%WIGGLE_COUNT, &src_rect);
-        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
-        render_digit_at2(renderer, 
-                        digits, 
-                        &src_rect,
-                        &dst_rect);
+       
 
 
-        srcRect(hoursseconddigit, (config.wiggle_index + 1)%WIGGLE_COUNT, &src_rect);
-        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
-        render_digit_at2(renderer, 
-                        digits, 
-                        &src_rect,
-                        &dst_rect);
 
+        srcRect(hoursfirstdigit,
+                config.wiggle_index%WIGGLE_COUNT,
+                &src_rect);
 
-        srcRect(COLON_INDEX, config.wiggle_index%WIGGLE_COUNT, &src_rect);
-        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
-        render_digit_at2(renderer, 
-                        digits, 
-                        &src_rect,
-                        &dst_rect);
+        dstRect(&pen_x, pen_y,
+                config.user_scale, fit_scale, 
+                &dst_rect);
 
-
-        srcRect(minutesfirstdigit, (config.wiggle_index+2)%WIGGLE_COUNT, &src_rect);
-        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
-        render_digit_at2(renderer, 
-                        digits, 
-                        &src_rect,
-                        &dst_rect);
-
-        
-        srcRect(minutesseconddigit, (config.wiggle_index+3)%WIGGLE_COUNT, &src_rect);
-        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
-        render_digit_at2(renderer, 
+        render_digit_at(renderer, 
                         digits, 
                         &src_rect,
                         &dst_rect);
@@ -342,26 +297,109 @@ void createRendering(SDL_Window *window,
 
 
 
+        srcRect(hoursseconddigit,
+                (config.wiggle_index + 1)%WIGGLE_COUNT,
+                &src_rect);
 
-        srcRect(COLON_INDEX, (config.wiggle_index+1)%WIGGLE_COUNT, &src_rect);
-        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
-        render_digit_at2(renderer, 
+        dstRect(&pen_x, pen_y,
+                config.user_scale, fit_scale, 
+                &dst_rect);
+
+        render_digit_at(renderer, 
                         digits, 
                         &src_rect,
                         &dst_rect);
 
-        srcRect(secondsfirstdigit, (config.wiggle_index+4)%WIGGLE_COUNT, &src_rect);
-        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
-        render_digit_at2(renderer, 
+
+
+
+        srcRect(COLON_INDEX, 
+                config.wiggle_index%WIGGLE_COUNT, 
+                &src_rect);
+
+        dstRect(&pen_x, pen_y,
+                config.user_scale, fit_scale, 
+                &dst_rect);
+
+        render_digit_at(renderer, 
                         digits, 
                         &src_rect,
                         &dst_rect);
 
 
 
-        srcRect(secondsseconddigit, (config.wiggle_index+5)%WIGGLE_COUNT, &src_rect);
-        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
-        render_digit_at2(renderer, 
+        srcRect(minutesfirstdigit,
+               (config.wiggle_index+2)%WIGGLE_COUNT,
+               &src_rect);
+
+        dstRect(&pen_x, pen_y,
+                config.user_scale, 
+                fit_scale, 
+                &dst_rect);
+
+        render_digit_at(renderer, 
+                        digits, 
+                        &src_rect,
+                        &dst_rect);
+
+
+
+        srcRect(minutesseconddigit,
+                (config.wiggle_index+3)%WIGGLE_COUNT,
+                &src_rect);
+
+        dstRect(&pen_x, pen_y,
+                config.user_scale, fit_scale, 
+                &dst_rect);
+
+        render_digit_at(renderer, 
+                        digits, 
+                        &src_rect,
+                        &dst_rect);
+
+
+
+
+
+        srcRect(COLON_INDEX,
+                (config.wiggle_index+1)%WIGGLE_COUNT,
+                &src_rect);
+
+        dstRect(&pen_x, pen_y,
+                config.user_scale, fit_scale,
+                &dst_rect);
+
+        render_digit_at(renderer, 
+                        digits, 
+                        &src_rect,
+                        &dst_rect);
+
+
+
+        srcRect(secondsfirstdigit,
+                (config.wiggle_index+4)%WIGGLE_COUNT,
+                &src_rect);
+
+        dstRect(&pen_x, pen_y,
+                config.user_scale, fit_scale,
+                &dst_rect);
+
+        render_digit_at(renderer, 
+                        digits, 
+                        &src_rect,
+                        &dst_rect);
+
+
+
+        srcRect(secondsseconddigit, 
+                (config.wiggle_index+5)%WIGGLE_COUNT,
+                &src_rect);
+
+        dstRect(&pen_x, pen_y,
+                config.user_scale, fit_scale,
+                &dst_rect);
+
+        render_digit_at(renderer, 
                         digits, 
                         &src_rect,
                         &dst_rect);
@@ -784,8 +822,8 @@ int main(int argc, char **argv) {
     digits = createTextureFromFile(renderer);
 
     Config config;
-    argumentParser(argc, argv, &config);
     initialConfig(window, &config);
+    argumentParser(argc, argv, &config);
 
     infiniteLoop(window, renderer, digits, &config);
     
