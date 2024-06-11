@@ -174,14 +174,21 @@ void fullScreenToggle(SDL_Window *window) {
 // SELECTS DIGIT FROM DIGITS.PNG DIGITS IMAGE
 // digit_index, column
 // wiggle_index, row
-void srcRect(int digit_index, int wiggle_index, SDL_Rect *src_rect) {
+void srcRect(int digit_index,
+             int wiggle_index,
+             SDL_Rect *src_rect) {
+
    *src_rect = (SDL_Rect){(int) (digit_index*SPRITE_CHAR_WIDTH),
                               (int) (wiggle_index*SPRITE_CHAR_HEIGHT),
                               SPRITE_CHAR_WIDTH,
                               SPRITE_CHAR_HEIGHT};
 }
 
-void dstRect(int *pen_x, int pen_y, float user_scale, float fit_scale, SDL_Rect *dst_rect) {
+void dstRect(int *pen_x,
+             int pen_y, 
+             float user_scale, 
+             float fit_scale, 
+             SDL_Rect *dst_rect) {
 
    // RESIZING DIGIT 
    // transforms digit chosen form image
@@ -198,6 +205,12 @@ void dstRect(int *pen_x, int pen_y, float user_scale, float fit_scale, SDL_Rect 
     // new cartesian coordinates of next new digit
    *pen_x += effective_digit_width;
 }
+
+
+
+
+
+
 
 
 /*  choosing subimage from and image    
@@ -220,6 +233,18 @@ void render_digit_at(SDL_Renderer *renderer,
 
    // ADDS EACH NEW DIGIT TO RENDERER, ONE BY ONE
    SDL_RenderCopy(renderer, digits, &src_rect, &dst_rect);
+    
+}
+
+
+void render_digit_at2(SDL_Renderer *renderer, 
+                     SDL_Texture *digits,
+                     SDL_Rect *src_rect,
+                     SDL_Rect *dst_rect) {
+
+
+   // ADDS EACH NEW DIGIT TO RENDERER, ONE BY ONE
+   SDL_RenderCopy(renderer, digits, src_rect, dst_rect);
     
 }
 
@@ -268,71 +293,78 @@ void createRendering(SDL_Window *window,
         const size_t seconds = time % 60;
         const size_t secondsfirstdigit = seconds/10;
         const size_t secondsseconddigit = seconds%10;
+   
+
+
+
+        SDL_Rect src_rect;
+        SDL_Rect dst_rect;
         
-        render_digit_at(renderer, 
+        srcRect(hoursfirstdigit, config.wiggle_index%WIGGLE_COUNT, &src_rect);
+        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
+        render_digit_at2(renderer, 
                         digits, 
-                        hoursfirstdigit,
-                        config.wiggle_index%WIGGLE_COUNT,
-                        &pen_x, &pen_y,
-                        config.user_scale,
-                        fit_scale);
+                        &src_rect,
+                        &dst_rect);
 
-        render_digit_at(renderer,
+
+        srcRect(hoursseconddigit, (config.wiggle_index + 1)%WIGGLE_COUNT, &src_rect);
+        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
+        render_digit_at2(renderer, 
                         digits, 
-                        hoursseconddigit,
-                        (config.wiggle_index + 1)%WIGGLE_COUNT,
-                        &pen_x, &pen_y,
-                        config.user_scale, 
-                        fit_scale);
+                        &src_rect,
+                        &dst_rect);
 
-        render_digit_at(renderer,
-                        digits,
-                        COLON_INDEX,
-                        config.wiggle_index%WIGGLE_COUNT,
-                        &pen_x, &pen_y, 
-                        config.user_scale, 
-                        fit_scale);
+
+        srcRect(COLON_INDEX, config.wiggle_index%WIGGLE_COUNT, &src_rect);
+        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
+        render_digit_at2(renderer, 
+                        digits, 
+                        &src_rect,
+                        &dst_rect);
+
+
+        srcRect(minutesfirstdigit, (config.wiggle_index+2)%WIGGLE_COUNT, &src_rect);
+        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
+        render_digit_at2(renderer, 
+                        digits, 
+                        &src_rect,
+                        &dst_rect);
+
         
-
-        render_digit_at(renderer, 
+        srcRect(minutesseconddigit, (config.wiggle_index+3)%WIGGLE_COUNT, &src_rect);
+        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
+        render_digit_at2(renderer, 
                         digits, 
-                        minutesfirstdigit, 
-                        (config.wiggle_index+2)%WIGGLE_COUNT, 
-                        &pen_x, &pen_y, 
-                        config.user_scale, 
-                        fit_scale);
+                        &src_rect,
+                        &dst_rect);
 
-        render_digit_at(renderer, 
+
+
+
+
+        srcRect(COLON_INDEX, (config.wiggle_index+1)%WIGGLE_COUNT, &src_rect);
+        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
+        render_digit_at2(renderer, 
                         digits, 
-                        minutesseconddigit, 
-                        (config.wiggle_index+3)%WIGGLE_COUNT, 
-                        &pen_x, &pen_y, 
-                        config.user_scale, 
-                        fit_scale);
+                        &src_rect,
+                        &dst_rect);
 
-        render_digit_at(renderer, 
-                        digits,
-                        COLON_INDEX,  
-                        (config.wiggle_index+1)%WIGGLE_COUNT, 
-                        &pen_x, &pen_y, 
-                        config.user_scale, 
-                        fit_scale);
-        
-
-        render_digit_at(renderer, 
+        srcRect(secondsfirstdigit, (config.wiggle_index+4)%WIGGLE_COUNT, &src_rect);
+        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
+        render_digit_at2(renderer, 
                         digits, 
-                        secondsfirstdigit, 
-                        (config.wiggle_index+4)%WIGGLE_COUNT, &pen_x, &pen_y, 
-                        config.user_scale, 
-                        fit_scale);
+                        &src_rect,
+                        &dst_rect);
 
-        render_digit_at(renderer, 
+
+
+        srcRect(secondsseconddigit, (config.wiggle_index+5)%WIGGLE_COUNT, &src_rect);
+        dstRect(&pen_x, pen_y,config.user_scale, fit_scale, &dst_rect);
+        render_digit_at2(renderer, 
                         digits, 
-                        secondsseconddigit, 
-                        (config.wiggle_index+5)%WIGGLE_COUNT, 
-                        &pen_x, &pen_y, 
-                        config.user_scale, 
-                        fit_scale);
+                        &src_rect,
+                        &dst_rect);
 
 
         /*  print time as window's title */
