@@ -13,7 +13,7 @@
 #define TITLE_CAP 256
 #define SCALE_FACTOR 0.15f
 
-/*  frames  */
+/*  rendering frames  */
 #define FPS 60
 #define DELTA_TIME (1.0f / FPS)
 
@@ -27,7 +27,7 @@
 #define CHAR_HEIGHT (380 / 2)
 #define CHARS_COUNT 8
 
-/*  text    */
+/*  initial window size, text size    */
 #define TEXT_WIDTH (CHAR_WIDTH * CHARS_COUNT)
 #define TEXT_HEIGHT (CHAR_HEIGHT)
 
@@ -466,12 +466,12 @@ void initial_pen(int w,
     
     // character width after scaling 
     const int effective_digit_width = (int)floorf(
-                                                    (float)CHAR_WIDTH*user_scale*fit_scale
-                                                 );
+                                            (float)CHAR_WIDTH*user_scale*fit_scale
+                                      );
     // character height after scaling
     const int effective_digit_height = (int)floorf(
-                                                    (float)CHAR_HEIGHT*user_scale*fit_scale
-                                                  );
+                                            (float)CHAR_HEIGHT*user_scale*fit_scale
+                                       );
     
     // position where rendering starts 
     *pen_x = w/2 - effective_digit_width*CHARS_COUNT/2;
@@ -694,7 +694,7 @@ void argumentParser(int argc, char **argv, Config *config) {
     }
 }
 
-void initialConfig(SDL_Window *window, Config *config) {
+void initialConfig(Config *config) {
 
     // MODE_ASCENDING: stop watch 
     *config = (Config){MODE_ASCENDING, 
@@ -707,25 +707,11 @@ void initialConfig(SDL_Window *window, Config *config) {
                        1.0f, 
                        "hello world",
                        0,
-                       0,
-                       0,
-                       0.0f,
+                       TEXT_WIDTH,
+                       TEXT_HEIGHT,
+                       1.0f,
                        0,
                        0};
-
-        // window width and height
-        windowSize(window, &config->w, &config->h);
-
-        // widow resize 
-        fitScale(config->w, config->h, &config->fit_scale);
-        
-        // pen
-        initial_pen(config->w,
-                    config->h,
-                    config->user_scale,
-                    config->fit_scale,
-                    &config->pen_x, 
-                    &config->pen_y);
 }
 
 
@@ -821,6 +807,13 @@ void infiniteLoop(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *digit
 
 /*  MAIN    */
 int main(int argc, char **argv) {
+    
+    Config config;
+    initialConfig(&config);
+    argumentParser(argc, argv, &config);
+
+
+
     initializeSDL();
 
     SDL_Window *window;
@@ -832,9 +825,7 @@ int main(int argc, char **argv) {
     SDL_Texture *digits;
     digits = createTextureFromFile(renderer);
 
-    Config config;
-    initialConfig(window, &config);
-    argumentParser(argc, argv, &config);
+    
 
     infiniteLoop(window, renderer, digits, &config);
     
