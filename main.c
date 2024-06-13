@@ -338,6 +338,15 @@ void createRendering(SDL_Window *window,
         memcpy(title, config.prev_title, TITLE_CAP);
 
 
+        /* pause colour */
+        if (config.paused) {
+            secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
+        } else {
+            secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
+        }
+
+
+
         SDL_RenderPresent(renderer);
 }
 
@@ -478,20 +487,13 @@ int main(int argc, char **argv) {
     }
 
     
-    // INFINITE LOOP
+    /* INFINITE LOOP */
     int quit = 0;
     while (!quit) {
 
-        if (config.paused) {
-            secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
-        } else {
-            secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
-        }
-        
         eventLoop(&quit, &config, window, digits);
 
         createRendering(window, renderer, digits, config);
-
 
 
         // UPDATE BEGIN //////////////////////////////
