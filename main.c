@@ -284,17 +284,14 @@ void hoursMinutesSeconds(Config *config, char str[9]) {
 
 void createRendering(SDL_Renderer *renderer, 
                      SDL_Texture *digits, 
-                     Config config, 
-                     float fit_scale, 
-                     int pen_x, 
-                     int pen_y,
+                     Config *config, 
                      char str[9]) {
         
         // black background color 
         SDL_SetRenderDrawColor(renderer, BACKGROUND_COLOR_R, BACKGROUND_COLOR_G, BACKGROUND_COLOR_B, 255);
         
         // texture colour, digits
-        if (config.paused) {
+        if (config->paused) {
             secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
         } else {
             secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
@@ -303,19 +300,17 @@ void createRendering(SDL_Renderer *renderer,
         SDL_RenderClear(renderer);
 
 
-
-
         SDL_Rect src_rect;
         SDL_Rect dst_rect;
        
 
         for (int i = 0; i<8; ++i) {
             srcRect(str[i],
-                    (config.wiggle_index + i)%WIGGLE_COUNT,
+                    (config->wiggle_index + i)%WIGGLE_COUNT,
                     &src_rect);
 
-            dstRect(&pen_x, pen_y,
-                    config.user_scale, fit_scale, 
+            dstRect(&config->pen_x, config->pen_y,
+                    config->user_scale, config->fit_scale, 
                     &dst_rect);
 
             render_digit_at(renderer, 
@@ -325,9 +320,6 @@ void createRendering(SDL_Renderer *renderer,
         }   
 
 }
-
-
-
 
 
 
@@ -736,7 +728,7 @@ void infiniteLoop(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *digit
         
         char str[9];
         hoursMinutesSeconds(config, str);
-        createRendering(renderer, digits, *config, config->fit_scale, config->pen_x, config->pen_y, str);
+        createRendering(renderer, digits, config, str);
 
 
         timeInWindowTitle(window, config, str);
