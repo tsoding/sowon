@@ -227,14 +227,59 @@ void render_digit_at(SDL_Renderer *renderer,
 }
 
 
-void hoursMinutesSeconds(Config *config, size_t *hours, size_t *minutes, size_t *seconds) {
+/*  B   
+            https://stackoverflow.com/questions/10279718/append-char-to-string-in-c
+            https://www.w3schools.com/c/c_strings.php
+
+        iteration over a c-string
+            https://stackoverflow.com/questions/3213827/how-to-iterate-over-a-string-in-c
+
+        number of digits
+            https://www.geeksforgeeks.org/program-count-digits-integer-3-different-methods/
+*/
+void hoursMinutesSeconds(Config *config, char str[9]) {
         // TODO: support amount of hours >99
 
         const size_t time = (size_t) ceilf(fmaxf(config->displayed_time, 0.0f));
-        *hours = time/60/60;
-        *minutes = time/60%60;
-        *seconds = time % 60;
+        const size_t hours = time/60/60;
+        const size_t minutes = time/60%60;
+        const size_t seconds = time % 60;
+
+        /*  hours   */
+        const size_t hoursfirstdigit = hours/10;
+        const size_t hoursseconddigit = hours%10;
+
+        /*  minutes */
+        const size_t minutesfirstdigit = minutes/10;
+        const size_t minutesseconddigit = minutes%10;
+
+        /*  seconds */
+        const size_t secondsfirstdigit = seconds/10;
+        const size_t secondsseconddigit = seconds%10;
+        
+        str[0] = hoursfirstdigit; 
+
+        str[1] = hoursseconddigit; 
+
+        str[2] = COLON_INDEX;
+
+        str[3] = minutesfirstdigit; 
+
+        str[4] = minutesseconddigit; 
+
+        str[5] = COLON_INDEX;
+
+        str[6] = secondsfirstdigit; 
+
+        str[7] = secondsseconddigit; 
+
+        str[8] = '\0';
+        // TODO: support amount of hours >99
 }
+
+
+
+
 
 
 void createRendering(SDL_Renderer *renderer, 
@@ -243,9 +288,7 @@ void createRendering(SDL_Renderer *renderer,
                      float fit_scale, 
                      int pen_x, 
                      int pen_y,
-                     size_t hours,
-                     size_t minutes,
-                     size_t seconds) {
+                     char str[9]) {
         
         // black background color 
         SDL_SetRenderDrawColor(renderer, BACKGROUND_COLOR_R, BACKGROUND_COLOR_G, BACKGROUND_COLOR_B, 255);
@@ -262,159 +305,46 @@ void createRendering(SDL_Renderer *renderer,
 
 
 
-
-        /*  hours   */
-        const size_t hoursfirstdigit = hours/10;
-        const size_t hoursseconddigit = hours%10;
-
-        /*  minutes */
-        const size_t minutesfirstdigit = minutes/10;
-        const size_t minutesseconddigit = minutes%10;
-
-        /*  seconds */
-        const size_t secondsfirstdigit = seconds/10;
-        const size_t secondsseconddigit = seconds%10;
-   
-
-
-
         SDL_Rect src_rect;
         SDL_Rect dst_rect;
        
 
+        for (int i = 0; i<8; ++i) {
+            srcRect(str[i],
+                    (config.wiggle_index + i)%WIGGLE_COUNT,
+                    &src_rect);
 
+            dstRect(&pen_x, pen_y,
+                    config.user_scale, fit_scale, 
+                    &dst_rect);
 
-        srcRect(hoursfirstdigit,
-                config.wiggle_index%WIGGLE_COUNT,
-                &src_rect);
-
-        dstRect(&pen_x, pen_y,
-                config.user_scale, fit_scale, 
-                &dst_rect);
-
-        render_digit_at(renderer, 
-                        digits, 
-                        &src_rect,
-                        &dst_rect);
-
-
-
-
-        srcRect(hoursseconddigit,
-                (config.wiggle_index + 1)%WIGGLE_COUNT,
-                &src_rect);
-
-        dstRect(&pen_x, pen_y,
-                config.user_scale, fit_scale, 
-                &dst_rect);
-
-        render_digit_at(renderer, 
-                        digits, 
-                        &src_rect,
-                        &dst_rect);
-
-
-
-
-        srcRect(COLON_INDEX, 
-                config.wiggle_index%WIGGLE_COUNT, 
-                &src_rect);
-
-        dstRect(&pen_x, pen_y,
-                config.user_scale, fit_scale, 
-                &dst_rect);
-
-        render_digit_at(renderer, 
-                        digits, 
-                        &src_rect,
-                        &dst_rect);
-
-
-
-        srcRect(minutesfirstdigit,
-               (config.wiggle_index+2)%WIGGLE_COUNT,
-               &src_rect);
-
-        dstRect(&pen_x, pen_y,
-                config.user_scale, 
-                fit_scale, 
-                &dst_rect);
-
-        render_digit_at(renderer, 
-                        digits, 
-                        &src_rect,
-                        &dst_rect);
-
-
-
-        srcRect(minutesseconddigit,
-                (config.wiggle_index+3)%WIGGLE_COUNT,
-                &src_rect);
-
-        dstRect(&pen_x, pen_y,
-                config.user_scale, fit_scale, 
-                &dst_rect);
-
-        render_digit_at(renderer, 
-                        digits, 
-                        &src_rect,
-                        &dst_rect);
-
-
-
-
-
-        srcRect(COLON_INDEX,
-                (config.wiggle_index+1)%WIGGLE_COUNT,
-                &src_rect);
-
-        dstRect(&pen_x, pen_y,
-                config.user_scale, fit_scale,
-                &dst_rect);
-
-        render_digit_at(renderer, 
-                        digits, 
-                        &src_rect,
-                        &dst_rect);
-
-
-
-        srcRect(secondsfirstdigit,
-                (config.wiggle_index+4)%WIGGLE_COUNT,
-                &src_rect);
-
-        dstRect(&pen_x, pen_y,
-                config.user_scale, fit_scale,
-                &dst_rect);
-
-        render_digit_at(renderer, 
-                        digits, 
-                        &src_rect,
-                        &dst_rect);
-
-
-
-        srcRect(secondsseconddigit, 
-                (config.wiggle_index+5)%WIGGLE_COUNT,
-                &src_rect);
-
-        dstRect(&pen_x, pen_y,
-                config.user_scale, fit_scale,
-                &dst_rect);
-
-        render_digit_at(renderer, 
-                        digits, 
-                        &src_rect,
-                        &dst_rect);
-
+            render_digit_at(renderer, 
+                            digits, 
+                            &src_rect,
+                            &dst_rect);
+        }   
 
 }
 
-void timeInWindowTitle(SDL_Window *window, Config *config, size_t hours, size_t minutes, size_t seconds) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+void timeInWindowTitle(SDL_Window *window, Config *config, char str[9]) {
 
         /*  print time as window's title */
         char title[TITLE_CAP] ="Hello World!";
-        snprintf(title, sizeof(title), "%02zu:%02zu:%02zu - sowon", hours, minutes, seconds);
+        //snprintf(title, sizeof(title), "%02zu:%02zu:%02zu - sowon", hours, minutes, seconds);
+        snprintf(title, sizeof(title), "%d%d:%d%d:%d%d - sowon", str[0], str[1], str[3], str[4], str[6], str[7]);
 
         if (strcmp(config->prev_title, title) != 0) {
             SDL_SetWindowTitle(window, title);
@@ -804,15 +734,19 @@ void infiniteLoop(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *digit
 
         eventLoop(&quit, config, window, digits);
         
-        size_t hours, minutes, seconds;
-        hoursMinutesSeconds(config, &hours, &minutes, &seconds);
-        createRendering(renderer, digits, *config, config->fit_scale, config->pen_x, config->pen_y, hours, minutes, seconds);
-        timeInWindowTitle(window, config, hours, minutes, seconds);
+        char str[9];
+        hoursMinutesSeconds(config, str);
+        createRendering(renderer, digits, *config, config->fit_scale, config->pen_x, config->pen_y, str);
+
+
+        timeInWindowTitle(window, config, str);
         renderingToScreen(renderer);
         
         updateConfig(window, config);
 
         SDL_Delay((int) floorf(DELTA_TIME * 1000.0f));
+
+
     }
 }
 
