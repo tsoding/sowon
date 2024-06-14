@@ -80,7 +80,7 @@ typedef struct Config {
 
 
 
-/*  ERROR HANDLER   */
+/********** ERROR HANDLER **********/
 
 void secc(int code)
 {
@@ -106,8 +106,131 @@ void secp(void *ptr)
 
 
 
+/********** PARSERS **********/
 
-/*  SDL */
+/*  time parser     */
+float parse_time(const char *time) {
+    float result = 0.0f;
+
+    while (*time) {
+        char *endptr = NULL;
+        float x = strtof(time, &endptr);
+
+        if (time == endptr) {
+            fprintf(stderr, "`%s` is not a number\n", time);
+            exit(1);
+        }
+
+        switch (*endptr) {
+            case '\0':
+
+            // seconds
+            case 's':
+                result += x;
+                break;
+            // minutes
+            case 'm':
+                result += x * 60.0f;
+                break;
+            // hours
+            case 'h':
+                result += x * 60.0f * 60.0f;
+                break;
+
+            default:
+                fprintf(stderr, "`%c` is an unknown time unit\n", *endptr);
+                exit(1);
+        }
+
+        time = endptr;
+        if (*time) time += 1;
+    }
+
+    return result;
+}
+
+
+/* argument parser  */
+void argumentParser(int argc, char **argv, Config *config) {
+
+    // MODE_ASCENDING: stop watch 
+    *config = (Config){MODE_ASCENDING, 
+                       0.0f, 
+                       0.0f, 
+                       0, 
+                       0, 
+                       0, 
+                       WIGGLE_DURATION, 
+                       1.0f, 
+                       "hello world",
+                       0,
+                       TEXT_WIDTH,
+                       TEXT_HEIGHT,
+                       1.0f,
+                       0,
+                       0};
+
+
+    
+
+    for (int i = 1; i < argc; ++i) {
+        // pause
+        if (strcmp(argv[i], "-p") == 0) {
+            config->p_flag = 1;
+            config->paused = 1;
+        } 
+        // exist
+        else if (strcmp(argv[i], "-e") == 0) {
+            config->exit_after_countdown = 1;
+        }
+        // time clock
+        else if (strcmp(argv[i], "clock") == 0) {
+            config->mode = MODE_CLOCK;
+        }
+        // countdown
+        else {
+            config->mode = MODE_COUNTDOWN;
+            config->displayed_time = parse_time(argv[i]);
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+/********** CONFIGURATION **********/
+
+void defaultConfig(Config *config) {
+
+    switch(config->mode) {
+        case MODE_ASCENDING:
+            break;
+
+        case MODE_COUNTDOWN:
+            config->displayed_time_initial = config->displayed_time;
+            break;
+
+        case MODE_CLOCK:
+            break;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+/***********  SDL *************/
 void initializeSDL() {
     secc(SDL_Init(SDL_INIT_VIDEO));
     secc(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"));
@@ -624,96 +747,6 @@ void eventLoop(int *quit, Config *config, SDL_Window *window, SDL_Texture *digit
 
 
 
-/********** PARSERS **********/
-
-/*  time parser     */
-float parse_time(const char *time) {
-    float result = 0.0f;
-
-    while (*time) {
-        char *endptr = NULL;
-        float x = strtof(time, &endptr);
-
-        if (time == endptr) {
-            fprintf(stderr, "`%s` is not a number\n", time);
-            exit(1);
-        }
-
-        switch (*endptr) {
-            case '\0':
-
-            // seconds
-            case 's':
-                result += x;
-                break;
-            // minutes
-            case 'm':
-                result += x * 60.0f;
-                break;
-            // hours
-            case 'h':
-                result += x * 60.0f * 60.0f;
-                break;
-
-            default:
-                fprintf(stderr, "`%c` is an unknown time unit\n", *endptr);
-                exit(1);
-        }
-
-        time = endptr;
-        if (*time) time += 1;
-    }
-
-    return result;
-}
-
-
-/* argument parser  */
-void argumentParser(int argc, char **argv, Config *config) {
-
-    for (int i = 1; i < argc; ++i) {
-        // pause
-        if (strcmp(argv[i], "-p") == 0) {
-            config->p_flag = 1;
-            config->paused = 1;
-        } 
-        // exist
-        else if (strcmp(argv[i], "-e") == 0) {
-            config->exit_after_countdown = 1;
-        }
-        // time clock
-        else if (strcmp(argv[i], "clock") == 0) {
-            config->mode = MODE_CLOCK;
-        }
-        // countdown
-        else {
-            config->mode = MODE_COUNTDOWN;
-            config->displayed_time = parse_time(argv[i]);
-            config->displayed_time_initial = config->displayed_time;
-        }
-    }
-}
-
-void initialConfig(Config *config) {
-
-    // MODE_ASCENDING: stop watch 
-    *config = (Config){MODE_ASCENDING, 
-                       0.0f, 
-                       0.0f, 
-                       0, 
-                       0, 
-                       0, 
-                       WIGGLE_DURATION, 
-                       1.0f, 
-                       "hello world",
-                       0,
-                       TEXT_WIDTH,
-                       TEXT_HEIGHT,
-                       1.0f,
-                       0,
-                       0};
-}
-
 
 
 
@@ -809,9 +842,8 @@ void infiniteLoop(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *digit
 int main(int argc, char **argv) {
     
     Config config;
-    initialConfig(&config);
     argumentParser(argc, argv, &config);
-
+    defaultConfig(&config);
 
 
     initializeSDL();
