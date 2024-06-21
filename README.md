@@ -42,7 +42,7 @@ $ make
 ### Modes
 
 - Ascending mode: `./sowon`
-- Descending mode: `./sowon <seconds>`
+- Descending mode: `./sowon <seconds or human readable time, ex: 1h23m54s>`
 - Clock Mode: `./sowon clock`
 
 ### Flags
