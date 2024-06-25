@@ -41,13 +41,20 @@ $ make
 
 ### Modes
 
-- Ascending mode: `./sowon`
-- Descending mode: `./sowon <seconds>`
-- Clock Mode: `./sowon clock`
+- Ascending mode: &emsp; `./sowon`
+- Descending mode: &emsp;`./sowon <seconds>`,  
+  &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;`./sowon <seconds>s`,  
+  &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;`./sowon <minutes>m`,  
+  &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;`./sowon <hours>h`
+
+- Clock Mode: &emsp;&emsp;&emsp;&emsp; `./sowon clock`
+
 
 ### Flags
 
-- Start in paused state: `./sowon -p <mode>`
+- Start in paused state: &emsp;&emsp;&emsp;`./sowon -p <mode>`
+- Exit after coundown ends: &emsp;`./sowon -e <seconds>`
+
 
 ### Key bindings
 
