@@ -45,7 +45,8 @@ $ make
 - Descending mode: &emsp;`./sowon <seconds>`,  
   &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;`./sowon <seconds>s`,  
   &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;`./sowon <minutes>m`,  
-  &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;`./sowon <hours>h`
+  &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;`./sowon <hours>h`,  
+  &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;`./sowon <hours>h<minutes>m<seconds>s`
 
 - Clock Mode: &emsp;&emsp;&emsp;&emsp; `./sowon clock`
 
