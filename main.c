@@ -248,6 +248,9 @@ int main(int argc, char **argv)
 
             case SDL_KEYDOWN: {
                 switch (event.key.keysym.sym) {
+                case SDLK_ESCAPE: {
+                    quit = 1;
+                } break;
                 case SDLK_SPACE: {
                     paused = !paused;
                     if (paused) {
