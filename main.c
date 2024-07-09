@@ -189,7 +189,7 @@ void frame_end(FpsDeltaTime *fpsdt)
 int main(int argc, char **argv)
 {
     Mode mode = MODE_ASCENDING;
-    float displayed_time = 0.0f;
+    float displayed_time = -1.0f;
     int paused = 0;
     int exit_after_countdown = 0;
 
@@ -273,7 +273,7 @@ int main(int argc, char **argv)
                 } break;
 
                 case SDLK_F5: {
-                    displayed_time = 0.0f;
+                    displayed_time = -1.0f;
                     paused = 0;
                     for (int i = 1; i < argc; ++i) {
                         if (strcmp(argv[i], "-p") == 0) {
