@@ -15,10 +15,8 @@
 
 /*  rendering frames  */
 #define FPS 60
-#define DELTA_TIME (1.0f / FPS)
+//#define DELTA_TIME (1.0f / FPS)
 
-
-/*  sprite  */
 #define SPRITE_CHAR_WIDTH (300 / 2)
 #define SPRITE_CHAR_HEIGHT (380 / 2)
 
@@ -149,6 +147,42 @@ float parse_time(const char *time) {
     return result;
 }
 
+typedef struct {
+    Uint32 frame_delay;
+    float dt;
+    Uint64 last_time;
+} FpsDeltaTime;
+
+FpsDeltaTime make_fpsdeltatime(const Uint32 fps_cap)
+{
+    return (FpsDeltaTime){
+        .frame_delay=(1000 / fps_cap),
+        .dt=0.0f,
+        .last_time=SDL_GetPerformanceCounter(),
+    };
+}
+
+void frame_start(FpsDeltaTime *fpsdt)
+{
+    const Uint64 now = SDL_GetPerformanceCounter();
+    const Uint64 elapsed = now - fpsdt->last_time;
+    fpsdt->dt = ((float)elapsed)  / ((float)SDL_GetPerformanceFrequency());
+    // printf("FPS: %f | dt %f\n", 1.0 / fpsdt->dt, fpsdt->dt);
+    fpsdt->last_time = now;
+}
+
+void frame_end(FpsDeltaTime *fpsdt)
+{
+    const Uint64 now = SDL_GetPerformanceCounter();
+    const Uint64 elapsed = now - fpsdt->last_time;
+    const Uint32 cap_frame_end = (Uint32) ((((float)elapsed) * 1000.0f) / ((float)SDL_GetPerformanceFrequency()));
+
+    if (cap_frame_end < fpsdt->frame_delay) {
+        SDL_Delay((fpsdt->frame_delay - cap_frame_end) );
+    }
+}
+
+#define TITLE_CAP 256
 
 /* argument parser  */
 void argumentParser(int argc, char **argv, Config *config) {
@@ -495,158 +529,18 @@ void fitScale(int w, int h, float *fit_scale) {
     }
 }
 
-
-/*  pre:    
-    post:   cartesian coordinates
-            position where rendering starts 
-            to fit CHAR_COUNT characters 
-            at user_scale*fit_scale scale
-*/
-void initial_pen(int w, 
-                 int h,
-                 float user_scale,
-                 float fit_scale, 
-                 int *pen_x,
-                 int *pen_y) {
-    
-    // character width after scaling 
-    const int effective_digit_width = (int)floorf(
-                                            (float)CHAR_WIDTH*user_scale*fit_scale
-                                      );
-    // character height after scaling
-    const int effective_digit_height = (int)floorf(
-                                            (float)CHAR_HEIGHT*user_scale*fit_scale
-                                       );
-    
-    // position where rendering starts 
-    *pen_x = w/2 - effective_digit_width*CHARS_COUNT/2;
-    *pen_y = h/2 - effective_digit_height/2;
-}
-
-
-
-/*  paused  */
-
-void pauseToggle(Config *config) {
-    config->paused = !config->paused;
-}
-
-/*  zoom   */
-
-void zoomInitial(Config *config) {
-    config->user_scale = 1.0f;
-}
-
-/* pre:
-   post: zoom in, represente in 'user_scale'
-*/
-void zoomIn(Config *config) {
-    config->user_scale += SCALE_FACTOR*config->user_scale;
-}
-
-void zoomOut(Config *config) {
-    config->user_scale -= SCALE_FACTOR*config->user_scale;
-}
-
-
-/*  reset clock  */
-
-void resetClock(Config *config, SDL_Texture *digits) {
-
-        config->displayed_time = 0.0f;
-        config->paused = 0;
-        
-        if (config->p_flag) {
-            config->paused = 1;
-        }
-        else {
-            config->displayed_time = config->displayed_time_initial;
-        }
-
-        if (config->paused) {
-            secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
-        }
-        else {
-            secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
-        }
-}
-
-int quitSDL() {
-   SDL_Quit();
-   return 0;
-}
-
-
-
-/*  EVENTS  */
-
-/*  event key down  */
-
-void keyDownCases(SDL_Event event, Config *config, SDL_Texture *digits, SDL_Window *window) {
-    // https://www.libsdl.org/release/SDL-1.2.15/docs/html/sdlkey.html
-    switch (event.key.keysym.sym) {
-        case SDLK_SPACE: {
-            pauseToggle(config);
-        } 
-        break;
-
-        case SDLK_KP_PLUS:
-
-        case SDLK_EQUALS: {
-            zoomInitial(config);
-        } 
-        break;
-
-        case SDLK_KP_MINUS:
-
-        case SDLK_MINUS: {
-            zoomOut(config);
-        } 
-        break;
-
-        case SDLK_KP_0:
-        
-        // in a spanish keyboard, 'equals key' is <shift+0> for zoom in
-        case SDLK_0: {
-            if (event.key.keysym.mod & KMOD_SHIFT) {
-                zoomIn(config);
-            }
-            else 
-                zoomInitial(config);
-        } 
-        break;
-
-        case SDLK_F5: {
-            resetClock(config, digits);
-        } 
-        break;
-
-        case SDLK_F11: {
-            fullScreenToggle(window);
-        } 
-        break;
-    }
-}
-
-/*  mouse wheel */
-
-void mouseWheel(SDL_Event event, Config *config) {
-    if (SDL_GetModState() & KMOD_CTRL) {
-        if (event.wheel.y > 0) {
-            config->user_scale += SCALE_FACTOR * config->user_scale;
-        } else if (event.wheel.y < 0) {
-            config->user_scale -= SCALE_FACTOR * config->user_scale;
-        }
-    }
-}
-
-
-
-/* even loop    */
-void eventLoop(int *quit, Config *config, SDL_Window *window, SDL_Texture *digits) {
-    SDL_Event event = {0};
-    while (SDL_PollEvent(&event)) {
-        switch (event.type) {
+    int quit = 0;
+    size_t wiggle_index = 0;
+    float wiggle_cooldown = WIGGLE_DURATION;
+    float user_scale = 1.0f;
+    char prev_title[TITLE_CAP];
+    FpsDeltaTime fps_dt = make_fpsdeltatime(FPS);
+    while (!quit) {
+        frame_start(&fps_dt);
+        // INPUT BEGIN //////////////////////////////
+        SDL_Event event = {0};
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
             case SDL_QUIT: {
                 *quit = 1;
             } break;
@@ -666,39 +560,27 @@ void eventLoop(int *quit, Config *config, SDL_Window *window, SDL_Texture *digit
 }
 
 
+        // UPDATE BEGIN //////////////////////////////
+        if (wiggle_cooldown <= 0.0f) {
+            wiggle_index++;
+            wiggle_cooldown = WIGGLE_DURATION;
+        }
+        wiggle_cooldown -= fps_dt.dt;
 
-
-
-
-
-
-
-// UPDATE
-
-void wiggleCoolDown(Config *config) {
-    if (config->wiggle_cooldown <= 0.0f) {
-        config->wiggle_index++;
-        config->wiggle_cooldown = WIGGLE_DURATION;
-    }
-
-    config->wiggle_cooldown -= DELTA_TIME;
-}
-
-void updateTime(Config *config) {
-    switch (config->mode) {
-        case MODE_ASCENDING: {
-            config->displayed_time += DELTA_TIME;
-        } 
-        break;
-    
-        case MODE_COUNTDOWN: {
-            if (config->displayed_time > 1e-6) {
-                config->displayed_time -= DELTA_TIME;
-            } 
-            else {
-                config->displayed_time = 0.0f;
-                if (config->exit_after_countdown) {
-                    quitSDL();
+        if (!paused) {
+            switch (mode) {
+            case MODE_ASCENDING: {
+                displayed_time += fps_dt.dt;
+            } break;
+            case MODE_COUNTDOWN: {
+                if (displayed_time > 1e-6) {
+                    displayed_time -= fps_dt.dt;
+                } else {
+                    displayed_time = 0.0f;
+                    if (exit_after_countdown) {
+                        SDL_Quit();
+                        return 0;
+                    }
                 }
             }
         } 
@@ -755,9 +637,7 @@ void infiniteLoop(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *digit
         
         updateConfig(window, config);
 
-        SDL_Delay((int) floorf(DELTA_TIME * 1000.0f));
-
-
+        frame_end(&fps_dt);
     }
 }
 
