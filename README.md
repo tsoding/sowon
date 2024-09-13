@@ -48,6 +48,7 @@ $ make
 ### Flags
 
 - Start in paused state: `./sowon -p <mode>`
+- Exit sowon after countdown finished: `./sowon -e`
 
 ### Key bindings
 
