@@ -8,11 +8,14 @@ INSTALL?=		install
 .PHONY: all
 all: Makefile sowon man
 
-sowon: main.c digits.h
+sowon: main.c digits.h penger_walk_sheet.h
 	$(CC) $(CFLAGS) -o sowon main.c $(LIBS)
 
 digits.h: png2c digits.png
-	./png2c digits.png > digits.h
+	./png2c digits.png digits > digits.h
+
+penger_walk_sheet.h: png2c penger_walk_sheet.png
+	./png2c penger_walk_sheet.png penger > penger_walk_sheet.h
 
 png2c: png2c.c
 	$(CC) $(COMMON_CFLAGS) -o png2c png2c.c -lm
