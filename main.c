@@ -258,7 +258,8 @@ int main(int argc, char **argv)
     SDL_Window *window =
         secp(SDL_CreateWindow(
                  "sowon",
-                 0, 0, TEXT_WIDTH, TEXT_HEIGHT,
+                 0, 0,
+                 TEXT_WIDTH, TEXT_HEIGHT*2,
                  SDL_WINDOW_RESIZABLE));
 
     SDL_Renderer *renderer =
