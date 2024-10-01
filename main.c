@@ -8,7 +8,10 @@
 #include <SDL2/SDL.h>
 
 #include "./digits.h"
+
+#ifdef PENGER
 #include "./penger_walk_sheet.h"
+#endif
 
 #define FPS 60
 //#define DELTA_TIME (1.0f / FPS)
@@ -74,12 +77,13 @@ SDL_Texture *load_digits_png_file_as_texture(SDL_Renderer *renderer)
     return secp(SDL_CreateTextureFromSurface(renderer, image_surface));
 }
 
+#ifdef PENGER
 SDL_Texture *load_penger_png_file_as_texture(SDL_Renderer *renderer)
 {
     SDL_Surface *image_surface = load_png_file_as_surface(penger_data, penger_width, penger_height);
     return secp(SDL_CreateTextureFromSurface(renderer, image_surface));
 }
-
+#endif
 
 void render_digit_at(SDL_Renderer *renderer, SDL_Texture *digits, size_t digit_index,
                      size_t wiggle_index, int *pen_x, int *pen_y, float user_scale, float fit_scale)
@@ -103,6 +107,7 @@ void render_digit_at(SDL_Renderer *renderer, SDL_Texture *digits, size_t digit_i
     *pen_x += effective_digit_width;
 }
 
+#ifdef PENGER
 void render_penger_at(SDL_Renderer *renderer, SDL_Texture *penger, size_t time, SDL_Window *window)
 {
     int frame_index = (time%60)%2;
@@ -134,6 +139,7 @@ void render_penger_at(SDL_Renderer *renderer, SDL_Texture *penger, size_t time, 
 
     SDL_RenderCopy(renderer, penger, &src_rect, &dst_rect);
 }
+#endif
 
 void initial_pen(SDL_Window *window, int *pen_x, int *pen_y, float user_scale, float *fit_scale)
 {
@@ -263,7 +269,11 @@ int main(int argc, char **argv)
     secc(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"));
 
     SDL_Texture *digits = load_digits_png_file_as_texture(renderer);
+
+    #ifdef PENGER
     SDL_Texture *penger = load_penger_png_file_as_texture(renderer);
+    #endif
+
     secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
 
     if (paused) {
@@ -365,7 +375,9 @@ int main(int argc, char **argv)
             const size_t t = (size_t) ceilf(fmaxf(displayed_time, 0.0f));
             // PENGER BEGIN //////////////////////////////
 
+            #ifdef PENGER
             render_penger_at(renderer, penger, t, window);
+            #endif
 
             // PENGER END //////////////////////////////
 
