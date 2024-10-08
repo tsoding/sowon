@@ -36,6 +36,7 @@
 #define BACKGROUND_COLOR_B 24
 #define SCALE_FACTOR 0.15f
 #define PENGER_SCALE 4
+#define PENGER_STEPS_PER_SECOND 3
 
 void secc(int code)
 {
@@ -108,9 +109,22 @@ void render_digit_at(SDL_Renderer *renderer, SDL_Texture *digits, size_t digit_i
 }
 
 #ifdef PENGER
-void render_penger_at(SDL_Renderer *renderer, SDL_Texture *penger, size_t time, SDL_Window *window)
+void render_penger_at(SDL_Renderer *renderer, SDL_Texture *penger, float time, SDL_Window *window)
 {
-    int frame_index = (time%60)%2;
+    int window_width, window_height;
+    SDL_GetWindowSize(window, &window_width, &window_height);
+
+    int sps  = PENGER_STEPS_PER_SECOND;
+    
+    int step = (int)(time*sps)%(60*sps); //step index [0,60*sps-1]
+
+    float progress  = step/(60.0*sps); // [0,1]
+    
+    int frame_index = step%2;
+
+    float penger_drawn_width = ((float)penger_width / 2) / PENGER_SCALE;
+
+    float penger_walk_width = window_width + penger_drawn_width;
 
     const SDL_Rect src_rect = {
         (int) (penger_width / 2) * frame_index,
@@ -118,17 +132,6 @@ void render_penger_at(SDL_Renderer *renderer, SDL_Texture *penger, size_t time, 
         (int) penger_width / 2,
         (int) penger_height
     };
-
-    int window_width, window_height;
-    SDL_GetWindowSize(window, &window_width, &window_height);
-
-    float step = time%60;
-
-    float progress = step / 60.0f;
-
-    float penger_drawn_width = ((float)penger_width / 2) / PENGER_SCALE;
-
-    float penger_walk_width = window_width + penger_drawn_width;
 
     SDL_Rect dst_rect = {
         floorf((float)penger_walk_width * progress - penger_drawn_width),
@@ -377,7 +380,7 @@ int main(int argc, char **argv)
             // PENGER BEGIN //////////////////////////////
 
             #ifdef PENGER
-            render_penger_at(renderer, penger, t, window);
+            render_penger_at(renderer, penger, displayed_time, window);
             #endif
 
             // PENGER END //////////////////////////////
@@ -438,11 +441,20 @@ int main(int argc, char **argv)
                 }
             } break;
             case MODE_CLOCK: {
+                float displayed_time_prev = displayed_time;
                 time_t t = time(NULL);
                 struct tm *tm = localtime(&t);
                 displayed_time = tm->tm_sec
                                + tm->tm_min  * 60.0f
                                + tm->tm_hour * 60.0f * 60.0f;
+                if(displayed_time <= displayed_time_prev){
+                    //same second, keep previous count and add subsecond resolution for penger
+                    if(floorf(displayed_time_prev) == floorf(displayed_time_prev+fps_dt.dt)){ //check for no newsecond shenaningans from dt
+                        displayed_time = displayed_time_prev + fps_dt.dt; 
+                    }else{
+                        displayed_time = displayed_time_prev;
+                    }
+                }
             } break;
             }
         }
