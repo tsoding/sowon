@@ -376,7 +376,7 @@ int main(int argc, char **argv)
         SDL_SetRenderDrawColor(renderer, BACKGROUND_COLOR_R, BACKGROUND_COLOR_G, BACKGROUND_COLOR_B, 255);
         SDL_RenderClear(renderer);
         {
-            const size_t t = (size_t) ceilf(fmaxf(displayed_time, 0.0f));
+            const size_t t = (size_t) floorf(fmaxf(displayed_time, 0.0f));
             // PENGER BEGIN //////////////////////////////
 
             #ifdef PENGER
