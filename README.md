@@ -14,6 +14,12 @@ $ sudo apt-get install libsdl2-dev
 $ make
 ```
 
+### Fedora
+```console
+$ sudo yum install SDL2-devel
+$ make
+```
+
 ### MacOS
 
 ```console
