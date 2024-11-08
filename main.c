@@ -109,7 +109,7 @@ void render_digit_at(SDL_Renderer *renderer, SDL_Texture *digits, size_t digit_i
 }
 
 #ifdef PENGER
-void render_penger_at(SDL_Renderer *renderer, SDL_Texture *penger, float time, SDL_Window *window)
+void render_penger_at(SDL_Renderer *renderer, SDL_Texture *penger, float time, int flipped, SDL_Window *window)
 {
     int window_width, window_height;
     SDL_GetWindowSize(window, &window_width, &window_height);
@@ -140,7 +140,7 @@ void render_penger_at(SDL_Renderer *renderer, SDL_Texture *penger, float time, S
         (int) penger_height / PENGER_SCALE
     };
 
-    SDL_RenderCopy(renderer, penger, &src_rect, &dst_rect);
+    SDL_RenderCopyEx(renderer, penger, &src_rect, &dst_rect, 0, NULL, flipped);
 }
 #endif
 
@@ -380,7 +380,7 @@ int main(int argc, char **argv)
             // PENGER BEGIN //////////////////////////////
 
             #ifdef PENGER
-            render_penger_at(renderer, penger, displayed_time, window);
+            render_penger_at(renderer, penger, displayed_time, mode==MODE_COUNTDOWN, window);
             #endif
 
             // PENGER END //////////////////////////////
