@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <time.h>
 
@@ -240,19 +241,21 @@ int main(int argc, char **argv)
 {
     Mode mode = MODE_ASCENDING;
     float displayed_time = 0.0f;
-    int paused = 0;
-    int exit_after_countdown = 0;
+    float start_time = 0.0f;
+    bool paused = false;
+    bool exit_after_countdown = false;
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-p") == 0) {
-            paused = 1;
+            paused = true;
         } else if (strcmp(argv[i], "-e") == 0) {
-            exit_after_countdown = 1;
+            exit_after_countdown = true;
         } else if (strcmp(argv[i], "clock") == 0) {
             mode = MODE_CLOCK;
         } else {
             mode = MODE_COUNTDOWN;
-            displayed_time = parse_time(argv[i]);
+            start_time = parse_time(argv[i]);
+            displayed_time = start_time;
         }
     }
 
@@ -286,7 +289,7 @@ int main(int argc, char **argv)
         secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
     }
 
-    int quit = 0;
+    bool quit = false;
     size_t wiggle_index = 0;
     float wiggle_cooldown = WIGGLE_DURATION;
     float user_scale = 1.0f;
@@ -299,7 +302,7 @@ int main(int argc, char **argv)
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_QUIT: {
-                quit = 1;
+                quit = true;
             } break;
 
             case SDL_KEYDOWN: {
@@ -329,20 +332,10 @@ int main(int argc, char **argv)
                 } break;
 
                 case SDLK_F5: {
-                    displayed_time = 0.0f;
-                    paused = 0;
-                    for (int i = 1; i < argc; ++i) {
-                        if (strcmp(argv[i], "-p") == 0) {
-                            paused = 1;
-                        } else {
-                            displayed_time = parse_time(argv[i]);
-                        }
+                    if (mode == MODE_CLOCK) {
+                        break;
                     }
-                    if (paused) {
-                        secc(SDL_SetTextureColorMod(digits, PAUSE_COLOR_R, PAUSE_COLOR_G, PAUSE_COLOR_B));
-                    } else {
-                        secc(SDL_SetTextureColorMod(digits, MAIN_COLOR_R, MAIN_COLOR_G, MAIN_COLOR_B));
-                    }
+                    displayed_time = start_time;
                 } break;
 
                 case SDLK_F11: {
