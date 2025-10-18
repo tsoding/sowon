@@ -14,7 +14,7 @@ PREFIX?=		/usr/local
 INSTALL?=		install
 
 .PHONY: all
-all: Makefile sowon sowon_rgfw man
+all: Makefile sowon sowon_rgfw
 
 sowon_rgfw: main_rgfw.c digits.h penger_walk_sheet.h
 	$(CC) $(RGFW_CFLAGS) -o sowon_rgfw main_rgfw.c $(RGFW_LIBS)
@@ -31,18 +31,19 @@ penger_walk_sheet.h: png2c penger_walk_sheet.png
 png2c: png2c.c
 	$(CC) $(COMMON_CFLAGS) -o png2c png2c.c -lm
 
-docs/sowon.6.gz: docs/sowon.6
-	gzip -c docs/sowon.6 > docs/sowon.6.gz
-
 .PHONY: man
-man: docs/sowon.6.gz
+man:
+	sed -e "s|%SOWON_SDL2_PATH%|$(DESTDIR)$(PREFIX)/bin/sowon|g" \
+		-e "s|%SOWON_RGFW_PATH%|$(DESTDIR)$(PREFIX)/bin/sowon_rgfw|g" \
+		docs/sowon.template.6 > docs/sowon.6
+	gzip -c docs/sowon.6 > docs/sowon.6.gz
 
 .PHONY: clean
 clean:
 	rm sowon docs/sowon.6.gz png2c
 
 .PHONY: install
-install: all
+install: all man
 	$(INSTALL) -d $(DESTDIR)$(PREFIX)/bin
 	$(INSTALL) -C ./sowon $(DESTDIR)$(PREFIX)/bin
 	$(INSTALL) -C ./sowon_rgfw $(DESTDIR)$(PREFIX)/bin
