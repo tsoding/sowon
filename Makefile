@@ -40,7 +40,7 @@ man:
 
 .PHONY: clean
 clean:
-	rm -f sowon sowon_rgfw docs/sowon.6.gz png2c
+	rm -f sowon sowon_rgfw docs/sowon.6 docs/sowon.6.gz png2c
 
 .PHONY: install
 install: all man
