@@ -115,7 +115,7 @@ void render_penger_at(SDL_Renderer *renderer, SDL_Texture *penger, float time, i
 }
 #endif
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     State state = {0};
     parse_state_from_args(&state, argc, argv);
