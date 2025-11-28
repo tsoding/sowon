@@ -8,6 +8,17 @@
 
 Dependencies: [SDL2](https://www.libsdl.org/download-2.0.php)
 
+### Fedora 42+
+Starting with Fedora 42, the native SDL2 library is no longer available.
+It was replaced by the SDL3 library. For programs that still require SDL2,
+an [`sdl2-compat`](https://github.com/libsdl-org/sdl2-compat) library,
+which provids a compatibility layer over SDL3, was introduced.
+```console
+$ sudo dnf install sdl2-compat-devel libXi-devel libXrandr-devel
+$ make
+$ ./sowon
+```
+
 ### Debian
 ```console
 $ sudo apt-get install libsdl2-dev
