@@ -68,7 +68,7 @@ $ ./sowon
 | Key | Description |
 | --- | --- |
 | <kbd>SPACE</kbd> | Toggle pause |
-| <kbd>=</kbd> | Zoom in |
+| <kbd>=</kbd> or <kbd>+</kbd> | Zoom in |
 | <kbd>-</kbd> | Zoom out |
 | <kbd>0</kbd> | Zoom 100% |
 | <kbd>F5</kbd> | Restart |
