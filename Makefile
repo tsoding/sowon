@@ -1,8 +1,6 @@
 UNAMEOS = $(shell uname)
 
 COMMON_CFLAGS=		-Wall -Wextra -ggdb -std=c99 -pedantic -Ithirdparty -Ibuild -DPENGER
-SDL2_CFLAGS=		`pkg-config --cflags sdl2` $(COMMON_CFLAGS)
-RGFW_CFLAGS=		$(COMMON_CFLAGS)
 COMMON_LIBS=		-lm
 SDL2_LIBS=			`pkg-config --libs sdl2` $(COMMON_LIBS)
 ifeq ($(UNAMEOS),Darwin)
@@ -17,10 +15,10 @@ INSTALL?=		install
 all: Makefile sowon sowon_rgfw man
 
 sowon_rgfw: src/main_rgfw.c build/digits.h build/penger_walk_sheet.h
-	$(CC) $(RGFW_CFLAGS) -o sowon_rgfw src/main_rgfw.c $(RGFW_LIBS)
+	$(CC) $(COMMON_CFLAGS) -o sowon_rgfw src/main_rgfw.c $(RGFW_LIBS)
 
 sowon: src/main.c build/digits.h build/penger_walk_sheet.h
-	$(CC) $(SDL2_CFLAGS) -o sowon src/main.c $(SDL2_LIBS)
+	$(CC) $(COMMON_CFLAGS) -o sowon src/main.c $(SDL2_LIBS)
 
 build/digits.h: build/png2c ./assets/digits.png
 	./build/png2c ./assets/digits.png digits > build/digits.h
