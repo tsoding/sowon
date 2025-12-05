@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
 
     printf("#ifndef PNG_%s_H_\n", name);
     printf("#define PNG_%s_H_\n", name);
+    printf("#include <stdint.h>\n");
     printf("size_t %s_width = %d;\n", name, x);
     printf("size_t %s_height = %d;\n", name, y);
     printf("uint32_t %s_data[] = {", name);
