@@ -37,7 +37,7 @@ man: docs/sowon.6.gz
 
 .PHONY: clean
 clean:
-	rm -r sowon build docs/sowon.6.gz
+	rm -rf sowon build docs/sowon.6.gz
 
 .PHONY: install
 install: all
