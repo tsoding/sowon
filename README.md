@@ -22,6 +22,22 @@ $ make
 $ ./sowon
 ```
 
+### Nixos
+
+- Temporary way
+
+```sh
+nix-build
+./result/bin/my-app
+
+```
+
+- Install via User profile
+
+```sh
+nix-env -i -f default.nix
+```
+
 ### MacOS
 
 ```console
@@ -55,11 +71,11 @@ $ ./sowon
 
 ### Key bindings
 
-| Key | Description |
-| --- | --- |
-| <kbd>SPACE</kbd> | Toggle pause |
-| <kbd>=</kbd> or <kbd>+</kbd> | Zoom in |
-| <kbd>-</kbd> | Zoom out |
-| <kbd>0</kbd> | Zoom 100% |
-| <kbd>F5</kbd> | Restart |
-| <kbd>F11</kbd> | Fullscreen |
+| Key                          | Description  |
+| ---------------------------- | ------------ |
+| <kbd>SPACE</kbd>             | Toggle pause |
+| <kbd>=</kbd> or <kbd>+</kbd> | Zoom in      |
+| <kbd>-</kbd>                 | Zoom out     |
+| <kbd>0</kbd>                 | Zoom 100%    |
+| <kbd>F5</kbd>                | Restart      |
+| <kbd>F11</kbd>               | Fullscreen   |
