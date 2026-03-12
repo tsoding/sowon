@@ -14,17 +14,17 @@ pkgs.stdenv.mkDerivation {
   ];
 
   buildInputs = with pkgs; [
-    xorg.libX11
-    xorg.libXrandr
-    xorg.libXcursor
-    xorg.libXext
-    xorg.libXi
-    xorg.libXinerama
-    xorg.libXrender
-    xorg.libXfixes
-    xorg.libxcb
-    xorg.libXau
-    xorg.libXdmcp
+    libX11
+    libXrandr
+    libXcursor
+    libXext
+    libXi
+    libXinerama
+    libXrender
+    libXfixes
+    libxcb
+    libXau
+    libXdmcp
     libGL
     stdenv.cc.cc.lib # Provides libstdc++ if needed
     glibc
