@@ -1,11 +1,14 @@
 #include "digits.h"
 
+
 #ifdef PENGER
 #include "penger_walk_sheet.h"
 #endif
 
 #include <math.h>
 #include <time.h>
+#include <stdio.h>
+#include <string.h>
 
 #define FPS 60
 #define COLON_INDEX 10
@@ -18,15 +21,6 @@
 #define CHARS_COUNT 8
 #define TEXT_WIDTH (CHAR_WIDTH * CHARS_COUNT)
 #define TEXT_HEIGHT (CHAR_HEIGHT)
-#define MAIN_COLOR_R 220
-#define MAIN_COLOR_G 220
-#define MAIN_COLOR_B 220
-#define PAUSE_COLOR_R 220
-#define PAUSE_COLOR_G 120
-#define PAUSE_COLOR_B 120
-#define BACKGROUND_COLOR_R 24
-#define BACKGROUND_COLOR_G 24
-#define BACKGROUND_COLOR_B 24
 #define PENGER_STEPS_PER_SECOND 3
 #define PENGER_SCALE 4
 #define SCALE_FACTOR 0.15f
@@ -88,6 +82,12 @@ typedef struct {
     char prev_title[TITLE_CAP];
 } State;
 
+typedef struct {
+    int red;
+    int green;
+    int blue;
+} Color;
+
 void parse_state_from_args(State *state, int argc, char **argv)
 {
     memset(state, 0, sizeof(*state));
@@ -102,13 +102,70 @@ void parse_state_from_args(State *state, int argc, char **argv)
             state->exit_after_countdown = 1;
         } else if (strcmp(argv[i], "clock") == 0) {
             state->mode = MODE_CLOCK;
-        } else {
+        } else if (strcmp(argv[i], "-t") == 0) {
+	    if (i+1 == argc) {
+		fprintf(stderr, "Missing argument for flag -t!\n");
+		exit(1);
+	    }
             state->mode = MODE_COUNTDOWN;
-            state->displayed_time = parse_time(argv[i]);
+            state->displayed_time = parse_time(argv[i+1]);
         }
     }
+
 }
 
+void parse_hex_color_code(Color *container, char *code) {
+    container->red = -1;
+    container->green = -1;
+    container->blue = -1;
+    if (strlen(code) != 6) {
+	printf("WARNING: Invalid hexademical string enter for color, defaulting to 0!\n");
+	return;
+    }
+    int cur = 0;
+    char *tmp = malloc(3 * sizeof(char));
+    for (int i = 0; i < 6; i++) {
+	if (i % 2 == 0) {
+	    strncpy(tmp, code+i, 2);
+    	    tmp[2] = '\0';
+    	    cur = (int)strtol(tmp, NULL, 16);
+
+    	    if (container->red == -1) { container->red = cur; }
+    	    else if (container->green == -1) { container->green = cur; }
+    	    else if (container->blue == -1) { container->blue = cur; }
+	}
+    }
+    free(tmp);
+}
+
+void parse_colors_from_args(Color *background_color, Color *pause_color, Color *main_color, int argc, char **argv) {
+    memset(background_color, 0, sizeof(*background_color)); 
+    memset(pause_color, 0, sizeof(*pause_color));
+    memset(main_color, 0, sizeof(*main_color));
+
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "--background-color") == 0) {
+	    if (i+1 == argc) {
+		fprintf(stderr,"ERROR: No background color supplied, but flag used!\n");
+		exit(1);
+	    }
+            parse_hex_color_code(background_color, argv[i+1]);
+	} else if (strcmp(argv[i], "--pause-color") == 0) {
+	    if (i+1 == argc) {
+		fprintf(stderr,"ERROR: No pause color supplied, but flag used!\n");
+		exit(1);
+	    }
+            parse_hex_color_code(pause_color, argv[i+1]);
+	} else if (strcmp(argv[i], "--main-color") == 0) {
+	    if (i+1 == argc) {
+		fprintf(stderr,"ERROR: No main color supplied, but flag used!\n");
+		exit(1);
+	    }
+            parse_hex_color_code(main_color, argv[i+1]);
+	} 
+    }
+
+}
 void state_update(State *state, float dt)
 {
     if (state->wiggle_cooldown <= 0.0f) {

@@ -269,8 +269,12 @@ void render_penger_at(GLint penger_tex_unit, int window_width, int window_height
 int main(int argc, char **argv)
 {
     State state = {0};
+    Color background_color = {0}; 
+    Color pause_color      = {0}; 
+    Color main_color       = {0}; 
 
     parse_state_from_args(&state, argc, argv);
+    parse_colors_from_args(&background_color, &pause_color, &main_color, argc, argv);
 
     RGFW_glHints *hints = RGFW_getGlobalHints_OpenGL();
     hints->profile = RGFW_glCore;
@@ -311,11 +315,9 @@ int main(int argc, char **argv)
     GLint penger_tex_unit = load_image_data_as_gl_texture(penger_data, penger_width, penger_height);
     #endif
 
-    set_texture_color_mod(MAIN_COLOR_R/255.0f, MAIN_COLOR_G/255.0f, MAIN_COLOR_B/255.0f);
+    set_texture_color_mod(main_color.red/255.0f, main_color.green/255.0f, main_color.blue/255.0f);
     if (state.paused) {
-        set_texture_color_mod(PAUSE_COLOR_R/255.0f, PAUSE_COLOR_G/255.0f, PAUSE_COLOR_B/255.0f);
-    } else {
-        set_texture_color_mod(MAIN_COLOR_R/255.0f, MAIN_COLOR_G/255.0f, MAIN_COLOR_B/255.0f);
+        set_texture_color_mod(pause_color.red/255.0f, pause_color.green/255.0f, pause_color.blue/255.0f);
     }
 
     GLuint vao;
@@ -341,9 +343,9 @@ int main(int argc, char **argv)
                 case RGFW_space: {
                     state.paused = !state.paused;
                     if (state.paused) {
-                        set_texture_color_mod(PAUSE_COLOR_R/255.0f, PAUSE_COLOR_G/255.0f, PAUSE_COLOR_B/255.0f);
+			set_texture_color_mod(pause_color.red/255.0f, pause_color.green/255.0f, pause_color.blue/255.0f);
                     } else {
-                        set_texture_color_mod(MAIN_COLOR_R/255.0f, MAIN_COLOR_G/255.0f, MAIN_COLOR_B/255.0f);
+			set_texture_color_mod(main_color.red/255.0f, main_color.green/255.0f, main_color.blue/255.0f);
                     }
                 } break;
 
@@ -371,9 +373,9 @@ int main(int argc, char **argv)
                 case RGFW_F5: {
                     parse_state_from_args(&state, argc, argv);
                     if (state.paused) {
-                        set_texture_color_mod(PAUSE_COLOR_R/255.0f, PAUSE_COLOR_G/255.0f, PAUSE_COLOR_B/255.0f);
+			set_texture_color_mod(pause_color.red/255.0f, pause_color.green/255.0f, pause_color.blue/255.0f);
                     } else {
-                        set_texture_color_mod(MAIN_COLOR_R/255.0f, MAIN_COLOR_G/255.0f, MAIN_COLOR_B/255.0f);
+			set_texture_color_mod(main_color.red/255.0f, main_color.green/255.0f, main_color.blue/255.0f);
                     }
                 } break;
 
@@ -401,7 +403,7 @@ int main(int argc, char **argv)
         // INPUT END //////////////////////////////
 
         // RENDER BEGIN //////////////////////////////
-        glClearColor(BACKGROUND_COLOR_R/255.0f, BACKGROUND_COLOR_G/255.0f, BACKGROUND_COLOR_B/255.0f, 1);
+        glClearColor(background_color.red/255.0f, background_color.green/255.0f, background_color.blue/255.0f, 1);
         glClear(GL_COLOR_BUFFER_BIT);
 
         {
