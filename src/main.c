@@ -322,8 +322,11 @@ int main(int argc, char **argv)
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
+    bool should_close = false;
     uint64_t last_time = RGFW_getTimerValue();
     while (RGFW_window_shouldClose(win) == RGFW_FALSE) {
+        if (should_close) break;
+
         uint64_t now = RGFW_getTimerValue();
         float dt = (float)(now - last_time)/RGFW_getTimerFreq();
         last_time = now;
@@ -344,6 +347,14 @@ int main(int argc, char **argv)
                         set_texture_color_mod(PAUSE_COLOR_R/255.0f, PAUSE_COLOR_G/255.0f, PAUSE_COLOR_B/255.0f);
                     } else {
                         set_texture_color_mod(MAIN_COLOR_R/255.0f, MAIN_COLOR_G/255.0f, MAIN_COLOR_B/255.0f);
+                    }
+                } break;
+
+                // Stop on '^Q' or '^C' key
+                case RGFW_q:
+                case RGFW_c: {
+                 if (RGFW_window_isKeyDown(win, RGFW_controlL) || RGFW_window_isKeyDown(win, RGFW_controlR)) {
+                        should_close = true;
                     }
                 } break;
 
