@@ -5,6 +5,7 @@
 #endif
 
 #include <math.h>
+#include <stdio.h>
 #include <time.h>
 
 #define FPS 60
