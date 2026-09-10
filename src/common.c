@@ -31,6 +31,9 @@
 #define PENGER_SCALE 4
 #define SCALE_FACTOR 0.15f
 #define TITLE_CAP 256
+#define DEMO_WINDOW_WIDTH 1085
+#define DEMO_WINDOW_HEIGHT 610
+#define DEMO_SCALE 0.722500
 
 typedef enum {
     MODE_ASCENDING = 0,

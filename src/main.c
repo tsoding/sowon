@@ -351,18 +351,21 @@ int main(int argc, char **argv)
                 // case RGFW_kpPlus:
                 case RGFW_equals: {
                     state.user_scale += SCALE_FACTOR * state.user_scale;
+                    printf("INFO: Zoom is at %f\n", state.user_scale);
                 } break;
 
                 // TODO: add support for RGFW_kpMinus when RGFW 1.8.0 is released
                 // case RGFW_kpMinus:
                 case RGFW_minus: {
                     state.user_scale -= SCALE_FACTOR * state.user_scale;
+                    printf("INFO: Zoom is at %f\n", state.user_scale);
                 } break;
 
                 // TODO: add support for RGFW_kp0 when RGFW 1.8.0 is released
                 // case RGFW_kp0:
                 case RGFW_0: {
                     state.user_scale = 1.0f;
+                    printf("INFO: Zoom is at %f\n", state.user_scale);
                 } break;
 
                 case RGFW_F5: {
