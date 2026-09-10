@@ -31,9 +31,13 @@
 #define PENGER_SCALE 4
 #define SCALE_FACTOR 0.15f
 #define TITLE_CAP 256
+
+// Window parameters for the demo.gif in README
 #define DEMO_WINDOW_WIDTH 1085
 #define DEMO_WINDOW_HEIGHT 610
 #define DEMO_SCALE 0.722500
+// FFmpeg command line for generating demo.gif:
+// $ ffmpeg -y -i 'input.mkv' -t 5 -vf "fps=10,scale=1085:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 output.gif
 
 typedef enum {
     MODE_ASCENDING = 0,
